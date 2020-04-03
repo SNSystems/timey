@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+/*eslint quotes: ["error", "single"]*/
+
 'use strict';
 
 const async = require ('async');
-const {spawn} = require ('child-process-promise');
 const fs = require ('fs');
 const glob = require ('glob-promise');
 const os = require ('os');
@@ -10,94 +11,11 @@ const path = require ('path');
 const {promisify} = require ('util');
 const yargs = require ('yargs');
 
+const run = require ('./run');
+
 // Promise-wrapped APIs.
 const stat = promisify (fs.stat);
 const readdir = promisify (fs.readdir);
-
-let verbose = true;
-const repo_name = 'db.db';
-
-function spawn_process (bin_dir, executable, args) {
-    const exe_path = path.join (bin_dir, executable);
-    if (verbose) {
-        console.log (`Running: ${exe_path} ${args.join (' ')}`);
-    }
-    const promise = spawn (exe_path, args);
-    const log = (channel) => {
-        const name = path.basename (exe_path, '.exe');
-        return (data) => console.log (`[${name}] ${channel}: ${data.toString ()}`);
-    };
-    if (verbose) {
-        promise.childProcess.stdout.on ('data', log ('stdout'));
-        promise.childProcess.stderr.on ('data', log ('stderr'));
-    }
-    return promise;
-}
-
-/**
- * Runs the rld-gen tool to generate linker test inputs.
- *
- * @param bin_dir{string}  The directory containing the LLVM executables.
- * @param output_dir{string}  The directory into which the test data will be written.
- * @param params{object}  A collection of parameters to configure the rld-gen tool's output.
- * @returns {Promise<*>} A promise which is resolved once the process exits.
- */
-function run_rld_gen (bin_dir, output_dir, params) {
-    return spawn_process (bin_dir, 'rld-gen', [
-        '--external', params.external,
-        '--linkonce', params.linkonce,
-        '--modules', params.modules,
-        '--output-directory', output_dir,
-        '--repo', path.join (output_dir, repo_name),
-        '--triple', 'x86_64-pc-linux-gnu-repo',
-    ]);
-}
-
-/**
- * Runs the repo2obj tool to convert a ticket file to an ELF object file.
- *
- * @param bin_dir{string}  The directory containing the LLVM executables.
- * @param work_dir{string}  The directory containing the test data.
- * @param ticket_file{string}  The path of the repo ticket file to be converted.
- * @param output_file{string}  The path of the ELF object file to be created.
- * @returns {Promise<*>} A promise which is resolved once the process exits.
- */
-function run_repo2obj (bin_dir, work_dir, ticket_file, output_file) {
-    return spawn_process (bin_dir, 'repo2obj', [
-        '-o', output_file,
-        '--repo', path.join (work_dir, repo_name),
-        ticket_file
-    ]);
-}
-
-/**
- * Runs the rld linker.
- *
- * @param bin_dir{string}  The directory containing the LLVM executables.
- * @param work_dir{string}  The directory containing the test data.
- * @param ticket_files{Array<string>}  The path of the linker's input ticket files.
- * @param output_file{string}  The linker's output file.
- * @returns {Promise<*>} A promise which is resolved once the process exits.
- */
-function run_rld (bin_dir, work_dir, ticket_files, output_file) {
-    return spawn_process (bin_dir, 'rld', [
-        '-o', output_file,
-        '--repo', path.join (work_dir, repo_name)
-    ].concat (ticket_files));
-}
-
-/**
- * Runs the lld linker.
- *
- * @param bin_dir{string}  The directory containing the LLVM executables.
- * @param work_dir{string}  The directory containing the test data.
- * @param object_files{Array<string>}  The path of the linker's input ticket files.
- * @param output_file{string}  The linker's output file.
- * @returns {Promise<*>} A promise which is resolved once the process exits.
- */
-function run_lld (bin_dir, work_dir, object_files, output_file) {
-    return spawn_process (bin_dir, 'ld.lld', ['-o', output_file].concat (object_files));
-}
 
 /**
  * @param work_dir{string}  The directory used for intermediate files.
@@ -109,10 +27,12 @@ function all_tickets_pattern (work_dir) {
 
 /**
  * Deletes the intermediate ticket, ELF, and repo database files from the working directory.
- * @param work_dir  The directory which will be used for intermediate files.
+ *
+ * @param work_dir{string}  The directory which will be used for intermediate files.
+ * @param repo_name{string}  The name of the program repository database.
  * @returns {Promise<*>} A promise which is resolved once all of the intermediate files have been deleted.
  */
-function clean_all (work_dir) {
+function clean_all (work_dir, repo_name) {
     const clean = (pattern) => {
         return glob (pattern)
             .then ((contents) => contents.forEach (file => fs.unlinkSync (file)));
@@ -122,8 +42,9 @@ function clean_all (work_dir) {
         .then (() => clean (path.join (work_dir, repo_name)));
 }
 
-const num_cpus = os.cpus ().length;
-const is_repo_linker = true;
+const is_repo_linker = false;
+const verbose = true;
+const repo_name = 'repository.db';
 
 /**
  * @param bin_dir{string}  The directory containing the LLVM executables.
@@ -133,12 +54,9 @@ const is_repo_linker = true;
  * @param num_linkonce_symbols{Number}  The number of linkonce symbols per module.
  */
 function single_run (bin_dir, work_dir, num_modules, num_external_symbols, num_linkonce_symbols) {
-    return clean_all (work_dir)
-        .then (() => run_rld_gen (bin_dir, work_dir, {
-            modules: num_modules,
-            external: num_external_symbols,
-            linkonce: num_linkonce_symbols,
-        }))
+    const r = run.runner (bin_dir, work_dir, repo_name, verbose);
+    return clean_all (work_dir, repo_name)
+        .then (() => r.rld_gen (num_modules, num_external_symbols, num_linkonce_symbols))
         .then (() => glob (all_tickets_pattern (work_dir)))
         .then (ticket_files => {
             if (is_repo_linker) {
@@ -147,16 +65,16 @@ function single_run (bin_dir, work_dir, num_modules, num_external_symbols, num_l
             }
 
             // Run repo2obj to convert each ticket file to an ELF object file for input to a traditional linker.
-            return async.mapLimit (ticket_files, num_cpus, function (ticket_file, callback) {
+            return async.mapLimit (ticket_files, os.cpus ().length, function (ticket_file, callback) {
                 const elf_file = ticket_file + '.elf';
-                run_repo2obj (bin_dir, work_dir, ticket_file, elf_file)
+                r.repo2obj (ticket_file, elf_file)
                     .then (() => callback (null, elf_file))
                     .catch (callback);
             });
         })
         .then (ld_inputs => {
             const start = Date.now ();
-            return (is_repo_linker ? run_rld : run_lld) (bin_dir, work_dir, ld_inputs, path.join (work_dir, 'a.out'))
+            return (is_repo_linker ? r.rld : r.lld) (ld_inputs, path.join (work_dir, 'a.out'))
                 .then (() => Date.now () - start)
                 .catch (err => { throw err });
         });
@@ -226,14 +144,12 @@ check_work_directory (argv.workDir, argv.force)
         const extmax = argv.external;
         const incr = argv.increment;
         return serialize_tasks (Array (Math.floor ((lomax * extmax) / (incr * incr)))
-            .fill ()
+            .fill (undefined)
             .map ((_, i) => {
                 const num_external = (Math.floor (i / (lomax / incr)) + 1) * incr;
                 const num_linkonce_symbols = (i % (lomax / incr) + 1) * incr;
-                return () => {
-                    return single_run (argv.binDir, argv.workDir, argv.modules, num_external, num_linkonce_symbols)
-                        .then (time => [num_external, num_linkonce_symbols, time]);
-                }
+                return () => single_run (argv.binDir, argv.workDir, argv.modules, num_external, num_linkonce_symbols)
+                    .then (time => [num_external, num_linkonce_symbols, time]);
             }));
     })
     .then (results => {
