@@ -42,7 +42,7 @@ function clean_all (work_dir, repo_name) {
         .then (() => clean (path.join (work_dir, repo_name)));
 }
 
-const is_repo_linker = false;
+const is_repo_linker = true;
 const verbose = true;
 const repo_name = 'repository.db';
 
@@ -115,47 +115,50 @@ function serialize_tasks (tasks) {
     }, Promise.resolve ([]));
 }
 
+function main () {
+    const argv = yargs.usage ('Usage: $0 path')
+        .strict ()
+        .default ('work-dir', os.tmpdir ())
+        .describe ('work-dir', 'The directory to be used for intermediate (work) files.')
+        .default ('bin-dir', '/usr/bin')
+        .describe ('bin-dir', 'The directory containing LLVM executables')
+        .boolean ('f')
+        .default ('f', false)
+        .describe ('f', 'Continue even if the work directory is not empty')
+        .alias ('f', 'force')
+        .default ('increment', 100)
+        .describe ('increment', 'The number by which the symbol counts are incremented on each run')
+        .default ('external', 2000)
+        .describe ('external', 'The number of external symbols defined by each module')
+        .default ('linkonce', 2000)
+        .describe ('linkonce', 'The number of linkonce symbols defined by each module')
+        .default ('modules', 10)
+        .describe ('modules', 'The number of modules to be created')
+        .help ('h')
+        .alias ('h', 'help')
+        .argv;
 
-const argv = yargs.usage ('Usage: $0 path')
-    .strict ()
-    .default ('work-dir', os.tmpdir ())
-    .describe ('work-dir', 'The directory to be used for intermediate (work) files.')
-    .default ('bin-dir', '/usr/bin')
-    .describe ('bin-dir', 'The directory containing LLVM executables')
-    .boolean ('f')
-    .default ('f', false)
-    .describe ('f', 'Continue even if the work directory is not empty')
-    .alias ('f', 'force')
-    .default ('increment', 1000)
-    .describe ('increment', 'The number by which the symbol counts are incremented on each run')
-    .default ('external', 2000)
-    .describe ('external', 'The number of external symbols defined by each module')
-    .default ('linkonce', 4000)
-    .describe ('linkonce', 'The number of linkonce symbols defined by each module')
-    .default ('modules', 100)
-    .describe ('modules', 'The number of modules to be created')
-    .help ('h')
-    .alias ('h', 'help')
-    .argv;
+    check_work_directory (argv.workDir, argv.force)
+        .then (() => {
+            const lomax = argv.linkonce;
+            const extmax = argv.external;
+            const incr = argv.increment;
+            return serialize_tasks (Array (Math.floor ((lomax * extmax) / (incr * incr)))
+                .fill (undefined)
+                .map ((_, i) => {
+                    const num_external = (Math.floor (i / (lomax / incr)) + 1) * incr;
+                    const num_linkonce_symbols = (i % (lomax / incr) + 1) * incr;
+                    return () => single_run (argv.binDir, argv.workDir, argv.modules, num_external, num_linkonce_symbols)
+                        .then (time => [num_external, num_linkonce_symbols, time]);
+                }));
+        })
+        .then (results => {
+            console.log (results);
+        }).catch (err => {
+        //console.error (`ERROR: ${err}`);
+        console.trace (err.stack);
+        process.exitCode = 1;
+    });
+}
 
-check_work_directory (argv.workDir, argv.force)
-    .then (() => {
-        const lomax = argv.linkonce;
-        const extmax = argv.external;
-        const incr = argv.increment;
-        return serialize_tasks (Array (Math.floor ((lomax * extmax) / (incr * incr)))
-            .fill (undefined)
-            .map ((_, i) => {
-                const num_external = (Math.floor (i / (lomax / incr)) + 1) * incr;
-                const num_linkonce_symbols = (i % (lomax / incr) + 1) * incr;
-                return () => single_run (argv.binDir, argv.workDir, argv.modules, num_external, num_linkonce_symbols)
-                    .then (time => [num_external, num_linkonce_symbols, time]);
-            }));
-    })
-    .then (results => {
-        console.log (results);
-    }).catch (err => {
-    //console.error (`ERROR: ${err}`);
-    console.trace (err.stack);
-    process.exitCode = 1;
-});
+main ();
