@@ -86,13 +86,13 @@ function check_work_directory (work_dir, force) {
     return promisify (fs.stat) (work_dir)
         .then (stats => {
             if (!stats.isDirectory ()) {
-                throw new Error ("The specified work directory is not a directory");
+                throw new Error ('The specified work directory is not a directory');
             }
             return promisify (fs.readdir) (work_dir);
         })
         .then (files => {
             if (files.length > 0 && !force) {
-                throw new Error ("The specified work directory was not empty (--force to continue anyway)");
+                throw new Error ('The specified work directory was not empty (--force to continue anyway)');
             }
             return true;
         });
