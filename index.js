@@ -164,7 +164,7 @@ function main () {
             results = results.reduce ((acc, inner) => acc + inner.join (' ') + '\n', '');
 
             // Send the results to the chosen output file/stdout.
-            return (argv.output == '-' ? write_stdout : write_output) ('external linkonce time\n' + results);
+            return (argv.output === '-' ? write_stdout : write_output) ('external linkonce time\n' + results);
         })
         .catch (err => {
             if (argv.debug) {
