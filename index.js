@@ -72,7 +72,7 @@ function single_run (bin_dir, work_dir, num_modules, num_external_symbols, num_l
             const start = Date.now ();
             return (is_repo_linker ? r.rld : r.lld) (ld_inputs, path.join (work_dir, 'a.out'))
                 .then (() => Date.now () - start)
-                .catch (err => { throw err });
+                .catch (err => { throw err; });
         });
 }
 
