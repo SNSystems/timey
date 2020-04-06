@@ -126,6 +126,7 @@ function main () {
         .alias ('f', 'force')
         .boolean ('debug')
         .default ('debug', false)
+        .hide ('debug')
         .default ('increment', 1000)
         .describe ('increment', 'The number by which the symbol counts are incremented on each run')
         .default ('external', 2000)
