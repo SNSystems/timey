@@ -1,27 +1,33 @@
 #!/bin/bash
-BIN_DIR = $HOME/realwork/github/llvm-project-prepo/build_mac/Release/bin
-WORK_DIR = $HOME/gen/output
+BIN_DIR=$HOME/realwork/github/llvm-project-prepo/build_mac/Release/bin
+WORK_DIR=$HOME/gen/output
+LINKONCE=1000
+EXTERNAL=1000
+INCREMENT=100
+MODULES=10
 
+echo "Timing lld"
 ./index.js \
            --linker=lld \
-           --output=./results/lld.dat \
+           --output=./results/lld.csv \
            --force \
            --work-dir=$WORK_DIR \
            --bin-dir=$BIN_DIR \
-           --linkonce=1000 \
-           --external=1000 \
-           --increment=100 \
-           --modules=10
-gnuplot plot < ./results/lld.dat > ./results/lld.svg
+           --linkonce=$LINKONCE \
+           --external=$EXTERNAL \
+           --increment=$INCREMENT \
+           --modules=$MODULES
+gnuplot plot < ./results/lld.csv > ./results/lld.svg
 
+echo "Timing rld"
 ./index.js \
            --linker=rld \
-           --output=./results/rld.dat \
+           --output=./results/rld.csv \
            --force \
            --work-dir=$WORK_DIR \
            --bin-dir=$BIN_DIR \
-           --linkonce=1000 \
-           --external=1000 \
-           --increment=100 \
-           --modules=10
-gnuplot plot < ./results/rld.dat > ./results/rld.svg
+           --linkonce=$LINKONCE \
+           --external=$EXTERNAL \
+           --increment=$INCREMENT \
+           --modules=$MODULES
+gnuplot plot < ./results/rld.csv > ./results/rld.svg
