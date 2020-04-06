@@ -192,10 +192,10 @@ function main () {
             // Flatten the two-dimensional results array to a string where there is one line for
             // each element of the outer dimension and an space-separated value for each element
             // for the inner. For example, [ [1,2,3], [4,5,6] ] becomes "1 2 3\n4 5 6\n".
-            results = results.reduce ((acc, inner) => acc + inner.join (' ') + '\n', '');
+            results = results.reduce ((acc, inner) => acc + inner.join (',') + '\n', '');
 
             // Send the results to the chosen output file/stdout.
-            return (argv.output === '-' ? write_stdout : write_output) ('external linkonce time\n' + results);
+            return (argv.output === '-' ? write_stdout : write_output) ('external,linkonce,time\n' + results);
         })
         .catch (err => {
             bar.stop ();
