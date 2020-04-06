@@ -1,24 +1,24 @@
 #!/bin/bash
 ./index.js \
            --linker=lld \
+           --output=./results/lld.dat \
            --force \
            --work-dir=/Users/paul/gen/output \
-           --output=./results/output.dat \
            --bin-dir=/Users/paul/realwork/github/llvm-project-prepo/build_mac/Release/bin \
            --linkonce=1000 \
            --external=1000 \
            --increment=100 \
            --modules=10
-gnuplot plot > ./results/lld.svg
+gnuplot plot < ./results/lld.dat > ./results/lld.svg
 
 ./index.js \
            --linker=rld \
+           --output=./results/rld.dat \
            --force \
            --work-dir=/Users/paul/gen/output \
-           --output=./results/output.dat \
            --bin-dir=/Users/paul/realwork/github/llvm-project-prepo/build_mac/Release/bin \
            --linkonce=1000 \
            --external=1000 \
            --increment=100 \
            --modules=10
-gnuplot plot > ./results/results/rld.svg
+gnuplot plot < ./results/rld.dat > ./results/rld.svg

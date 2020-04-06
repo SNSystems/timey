@@ -8,4 +8,4 @@ set ylabel "Linkonce Symbols"
 set zlabel "Time(ms)" #offset 1, 0
 set view 120, 50
 
-splot './results/output.dat' using "external":"linkonce":"time" with lines
+splot '<cat' using "external":"linkonce":"time" with lines
