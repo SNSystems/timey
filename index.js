@@ -178,7 +178,7 @@ function main () {
                     return () => single_run (r, argv.linker, argv.modules, num_external, num_linkonce)
                         .then (time => {
                             bar.update (i);
-                            return [num_external, num_linkonce, time]
+                            return [num_external, num_linkonce, time];
                         });
                 }));
         })
