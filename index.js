@@ -4,6 +4,7 @@
 'use strict';
 
 const async = require ('async');
+const cli_progress = require ('cli-progress');
 const fs = require ('fs');
 const glob = require ('glob-promise');
 const os = require ('os');
@@ -49,10 +50,10 @@ function clean_all (work_dir, repo_name) {
  * @param num_external_symbols{Number}  The number of external symbols per module.
  * @param num_linkonce_symbols{Number}  The number of linkonce symbols per module.
  */
-function single_run (r,  linker, num_modules, num_external_symbols, num_linkonce_symbols) {
+function single_run (r, linker, num_modules, num_external_symbols, num_linkonce_symbols) {
     const work_dir = r.get_work_dir ();
     return clean_all (work_dir, r.get_repo_name ())
-        .then (() => console.log (`external=${num_external_symbols}, linkonce=${num_linkonce_symbols}`))
+        //.then (() => console.log (`external=${num_external_symbols}, linkonce=${num_linkonce_symbols}`))
         .then (() => r.rld_gen (num_modules, num_external_symbols, num_linkonce_symbols))
         .then (() => glob (all_tickets_pattern (work_dir)))
         .then (ticket_files => {
@@ -154,13 +155,20 @@ function main () {
         .alias ('h', 'help')
         .argv;
 
+    const bar = new cli_progress.SingleBar({}, cli_progress.Presets.shades_classic);
+
+    const lomax = argv.linkonce;
+    const extmax = argv.external;
+    const incr = argv.increment;
+    const num_tasks = Math.floor ((lomax * extmax) / (incr * incr));
+
+    // start the progress bar with a total value of 200 and start value of 0
+    bar.start(num_tasks);
+
     check_work_directory (argv.workDir, argv.force)
         .then (() => {
-            const lomax = argv.linkonce;
-            const extmax = argv.external;
-            const incr = argv.increment;
-            return serialize_tasks (Array (Math.floor ((lomax * extmax) / (incr * incr)))
-                .fill (undefined)
+            return serialize_tasks (Array (num_tasks)
+                .fill ()
                 .map ((_, i) => {
                     const r = run.runner (argv.binDir, argv.workDir, argv.repoName, argv.verbose);
 
@@ -168,10 +176,15 @@ function main () {
                     const num_external = (Math.floor (i / (lomax / incr)) + 1) * incr;
                     const num_linkonce = (i % (lomax / incr) + 1) * incr;
                     return () => single_run (r, argv.linker, argv.modules, num_external, num_linkonce)
-                        .then (time => [num_external, num_linkonce, time]);
+                        .then (time => {
+                            bar.update (i);
+                            return [num_external, num_linkonce, time]
+                        });
                 }));
         })
         .then (results => {
+            bar.stop ();
+
             // Write the results to a file in a format that GnuPlot can display.
             const write_output = text => promisify (fs.writeFile) (argv.output, text);
             const write_stdout = text => process.stdout.write (text);
@@ -185,6 +198,7 @@ function main () {
             return (argv.output === '-' ? write_stdout : write_output) ('external linkonce time\n' + results);
         })
         .catch (err => {
+            bar.stop ();
             if (argv.debug) {
                 console.trace (err.stack);
             } else {

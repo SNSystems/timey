@@ -12,6 +12,7 @@
   "dependencies": {
     "async": "^3.2.0",
     "child-process-promise": "^2.2.1",
+    "cli-progress": "^3.6.1",
     "glob": "^7.1.6",
     "glob-promise": "^3.4.0",
     "yargs": "^15.3.1"
