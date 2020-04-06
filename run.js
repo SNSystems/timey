@@ -33,6 +33,9 @@ function spawn_process (bin_dir, executable, args, verbose) {
  */
 exports.runner = (bin_dir, work_dir, repo_name, verbose = false) => {
     return {
+        get_work_dir: () => work_dir,
+        get_repo_name: () => repo_name,
+
         /**
          * Runs the rld-gen tool to generate linker test inputs.
          *

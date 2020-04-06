@@ -39,19 +39,16 @@ function clean_all (work_dir, repo_name) {
 }
 
 const is_repo_linker = true;
-const verbose = true;
-const repo_name = 'repository.db';
 
 /**
- * @param bin_dir{string}  The directory containing the LLVM executables.
- * @param work_dir{string}  The directory which will be used for intermediate files.
+ * @param r{runner}  An instance of run.js/runner.
  * @param num_modules{Number}  The number of modules (ticket files) to be produced.
  * @param num_external_symbols{Number}  The number of external symbols per module.
  * @param num_linkonce_symbols{Number}  The number of linkonce symbols per module.
  */
-function single_run (bin_dir, work_dir, num_modules, num_external_symbols, num_linkonce_symbols) {
-    const r = run.runner (bin_dir, work_dir, repo_name, verbose);
-    return clean_all (work_dir, repo_name)
+function single_run (r,  num_modules, num_external_symbols, num_linkonce_symbols) {
+    const work_dir = r.get_work_dir ();
+    return clean_all (work_dir, r.get_repo_name ())
         .then (() => r.rld_gen (num_modules, num_external_symbols, num_linkonce_symbols))
         .then (() => glob (all_tickets_pattern (work_dir)))
         .then (ticket_files => {
@@ -114,10 +111,12 @@ function serialize_tasks (tasks) {
 function main () {
     const argv = yargs.usage ('Usage: $0 path')
         .strict ()
-        .default ('work-dir', os.tmpdir ())
-        .describe ('work-dir', 'The directory to be used for intermediate (work) files.')
         .default ('bin-dir', '/usr/bin')
         .describe ('bin-dir', 'The directory containing LLVM executables')
+        .default ('work-dir', os.tmpdir ())
+        .describe ('work-dir', 'The directory to be used for intermediate (work) files.')
+        .default ('repo-name', 'repository.db')
+        .describe ('repo-name', 'The program repository file name')
         .default ('o', '-')
         .describe ('o', 'The file to which the results will be written')
         .alias ('o', 'output')
@@ -135,6 +134,9 @@ function main () {
         .describe ('linkonce', 'The number of linkonce symbols defined by each module')
         .default ('modules', 10)
         .describe ('modules', 'The number of modules to be created')
+        .boolean ('verbose')
+        .default ('verbose', false)
+        .describe ('verbose', 'Produce verbose output')
         .help ('h')
         .alias ('h', 'help')
         .argv;
@@ -147,9 +149,12 @@ function main () {
             return serialize_tasks (Array (Math.floor ((lomax * extmax) / (incr * incr)))
                 .fill (undefined)
                 .map ((_, i) => {
+                    const r = run.runner (argv.binDir, argv.workDir, argv.repoName, argv.verbose);
+
+                    // Convert an index in the task array (i) to a
                     const num_external = (Math.floor (i / (lomax / incr)) + 1) * incr;
                     const num_linkonce = (i % (lomax / incr) + 1) * incr;
-                    return () => single_run (argv.binDir, argv.workDir, argv.modules, num_external, num_linkonce)
+                    return () => single_run (r, argv.modules, num_external, num_linkonce)
                         .then (time => [num_external, num_linkonce, time]);
                 }));
         })
