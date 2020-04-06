@@ -6,3 +6,13 @@
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/paulhuggett/timey.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/paulhuggett/timey/context:javascript)
 
 A utility for timing linkers.
+
+## Performance Profiles
+
+### lld
+
+![lld performance profile](./results/lld.svg)
+
+### rld
+
+![rld performance profile](./results/rld.svg)
