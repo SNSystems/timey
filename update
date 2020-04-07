@@ -17,7 +17,7 @@ echo "Timing lld"
            --external=$EXTERNAL \
            --increment=$INCREMENT \
            --modules=$MODULES
-gnuplot plot < ./results/lld.csv > ./results/lld.svg
+gnuplot plot3d < ./results/lld.csv > ./results/lld.svg
 
 echo "Timing rld"
 ./index.js \
@@ -34,3 +34,7 @@ gnuplot plot3d < ./results/rld.csv > ./results/rld.svg
 
 ./comparison.js --major=external --minor=linkonce ./results/lld.csv ./results/rld.csv > ./results/external.csv
 ./comparison.js --major=linkonce --minor=external ./results/lld.csv ./results/rld.csv > ./results/linkonce.csv
+
+gnuplot -e "filename='./results/external.csv'" plot2d > ./results/compare_external.svg
+gnuplot -e "filename='./results/linkonce.csv'" plot2d > ./results/compare_linkonce.svg
+
