@@ -151,13 +151,12 @@ function main () {
         .describe ('verbose', 'Produce verbose output')
         .string('linker')
         .choices('linker', Object.keys (linkers))
-        .default ('linker', 'rld')
+        .default ('linker', Object.keys (linkers)[0])
         .describe ('linker', 'The linker to be timed')
         .help ('h')
         .alias ('h', 'help')
         .argv;
 
-    const bar = new cli_progress.SingleBar({}, cli_progress.Presets.shades_classic);
 
     const lomax = argv.linkonce;
     const extmax = argv.external;
@@ -165,7 +164,11 @@ function main () {
     const num_tasks = Math.floor ((lomax * extmax) / (incr * incr));
 
     // start the progress bar with a total value of 200 and start value of 0
-    bar.start(num_tasks);
+    let bar = undefined;
+    if (!argv.verbose) {
+        bar = new cli_progress.SingleBar ({}, cli_progress.Presets.shades_classic);
+        bar.start (num_tasks);
+    }
 
     check_work_directory (argv.workDir, argv.force)
         .then (() => {
@@ -177,15 +180,19 @@ function main () {
                     // Convert an index in the task array (i) to a
                     const num_external = (Math.floor (i / (lomax / incr)) + 1) * incr;
                     const num_linkonce = (i % (lomax / incr) + 1) * incr;
-                    return () => single_run (r, argv.linker, argv.modules, num_external, num_linkonce)
+                    return () => single_run (r, linkers[argv.linker], argv.modules, num_external, num_linkonce)
                         .then (time => {
-                            bar.update (i);
+                            if (bar) {
+                                bar.update (i + 1);
+                            }
                             return [num_external, num_linkonce, time];
                         });
                 }));
         })
         .then (results => {
-            bar.stop ();
+            if (bar) {
+                bar.stop ();
+            }
 
             // Write the results to a file in a format that GnuPlot can display.
             const write_output = text => promisify (fs.writeFile) (argv.output, text);
@@ -195,7 +202,9 @@ function main () {
             return (argv.output === '-' ? write_stdout : write_output) ('external,linkonce,time\n' + csv.from_array2d (results));
         })
         .catch (err => {
-            bar.stop ();
+            if (bar) {
+                bar.stop ();
+            }
             if (argv.debug) {
                 console.trace (err.stack);
             } else {
