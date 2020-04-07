@@ -91,19 +91,6 @@ function validate_minor (arr, minor) {
         arr.every (el => el.hasOwnProperty (minor) && el[minor] === arr[0][minor]);
 }
 
-const argv = require ('yargs')
-    .strict ()
-    .command ('$0 [options] <csv1> <csv2>', 'Reduce inputs csv1 and csv2 to a single CSV file', (yargs) => {
-        yargs
-            .options ({
-                'major': {default: 'external', describe: 'The major key', type: 'string'},
-                'minor': {default: 'linkonce', describe: 'The minor key', type: 'string'},
-                'common': {default: 'time', describe: 'The common key', type: 'string'}
-            });
-    })
-    .help ()
-    .argv;
-
 /**
  *
  * @param arr{{}[])}
@@ -117,6 +104,18 @@ function validate_keys (arr, major, minor, common) {
     return arr.every (el => el.hasOwnProperty (major) && el.hasOwnProperty (minor) && el.hasOwnProperty (common));
 }
 
+const argv = require ('yargs')
+    .strict ()
+    .command ('$0 [options] <csv1> <csv2>', 'Reduce inputs csv1 and csv2 to a single CSV file', (yargs) => {
+        yargs
+            .options ({
+                'major': {default: 'external', describe: 'The major key', type: 'string'},
+                'minor': {default: 'linkonce', describe: 'The minor key', type: 'string'},
+                'common': {default: 'time', describe: 'The common key', type: 'string'}
+            });
+    })
+    .help ()
+    .argv;
 read_two_source_files (argv.csv1, argv.csv2)
     .then (r => {
         const [ra, rb] = r;
