@@ -12,6 +12,7 @@ const path = require ('path');
 const {promisify} = require ('util');
 const yargs = require ('yargs');
 
+const csv = require ('./csv');
 const run = require ('./run');
 
 const linkers = {rld:1, lld:2};
@@ -57,7 +58,7 @@ function single_run (r, linker, num_modules, num_external_symbols, num_linkonce_
         .then (() => r.rld_gen (num_modules, num_external_symbols, num_linkonce_symbols))
         .then (() => glob (all_tickets_pattern (work_dir)))
         .then (ticket_files => {
-            if (linker === 'rld') {
+            if (linker === linkers.rld) {
                 // Just pass on the ticket files.
                 return ticket_files;
             }
@@ -72,7 +73,7 @@ function single_run (r, linker, num_modules, num_external_symbols, num_linkonce_
         })
         .then (ld_inputs => {
             const start = Date.now ();
-            return (linker === 'rld' ? r.rld : r.lld) (ld_inputs, path.join (work_dir, 'a.out'))
+            return (linker === linkers.rld ? r.rld : r.lld) (ld_inputs, path.join (work_dir, 'a.out'))
                 .then (() => Date.now () - start)
                 .catch (err => { throw err; });
         });
@@ -116,6 +117,7 @@ function serialize_tasks (tasks) {
         return promise_chain.then (chain_results => item ().then (result => [...chain_results, result]));
     }, Promise.resolve ([]));
 }
+
 
 function main () {
     const argv = yargs.usage ('Usage: $0 path')
@@ -189,13 +191,8 @@ function main () {
             const write_output = text => promisify (fs.writeFile) (argv.output, text);
             const write_stdout = text => process.stdout.write (text);
 
-            // Flatten the two-dimensional results array to a string where there is one line for
-            // each element of the outer dimension and an space-separated value for each element
-            // for the inner. For example, [ [1,2,3], [4,5,6] ] becomes "1 2 3\n4 5 6\n".
-            results = results.reduce ((acc, inner) => acc + inner.join (',') + '\n', '');
-
             // Send the results to the chosen output file/stdout.
-            return (argv.output === '-' ? write_stdout : write_output) ('external,linkonce,time\n' + results);
+            return (argv.output === '-' ? write_stdout : write_output) ('external,linkonce,time\n' + csv.from_array2d (results));
         })
         .catch (err => {
             bar.stop ();
