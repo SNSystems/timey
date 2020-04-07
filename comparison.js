@@ -145,7 +145,7 @@ read_two_source_files (argv.csv1, argv.csv2)
 
         // Column header names drawn from the major key and the two input file names.
         let result = [[
-            argv.major,
+            'symbols',
             path.basename (argv.csv1, '.csv'),
             path.basename (argv.csv2, '.csv')
         ]];
