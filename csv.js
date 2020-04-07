@@ -42,7 +42,7 @@ function object_values_as_number (obj) {
     let d = {};
     Object.keys(obj).forEach (key => {
         const value = to_number (obj[key]);
-        d[key] = (value === NaN) ? obj[key] : value;
+        d[key] = isNaN (value) ? obj[key] : value;
     });
     return d;
 }
