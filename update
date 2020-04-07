@@ -31,3 +31,6 @@ echo "Timing rld"
            --increment=$INCREMENT \
            --modules=$MODULES
 gnuplot plot < ./results/rld.csv > ./results/rld.svg
+
+./comparison.js --major=external --minor=linkonce ./results/lld.csv ./results/rld.csv > ./results/external.csv
+./comparison.js --major=linkonce --minor=external ./results/lld.csv ./results/rld.csv > ./results/linkonce.csv

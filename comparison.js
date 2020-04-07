@@ -2,7 +2,7 @@
 /*eslint quotes: ["error", "single"]*/
 'use strict';
 
-const assert = require('assert').strict;
+const assert = require ('assert').strict;
 const path = require ('path');
 
 const csv = require ('./csv');
@@ -19,9 +19,23 @@ function read_two_source_files (a, b) {
 }
 
 /**
+ * Reduces an array of rows, each of which has an object with major, minor, and common keys, to
+ * an entry for each unique major key with the largest corresponding minor value. That is, an input
+ * such as:
+ *  [
+ *    { major: 1, minor: 1, common: 10},
+ *    { major: 1, minor: 2, common: 20},
+ *    { major: 2: minor: 1, common: 30}
+ *  ]
+ * will become:
+ *  [
+ *    { major: 1, minor: 2, common: 20},
+ *    { major: 2, minor: 1m common: 30}
+ *  ]
  *
  * @param arr{({})[]} An array of objects.
- * @param major{string}  The major object key; that is, the key that will become the tools first output value.
+ * @param major{string}  The major object key; that is, the key that will become the tools first
+ * output value.
  * @param minor{string} The minor object key: we find the largest minor value for each major.
  * @return {({})[]}
  */
@@ -32,10 +46,11 @@ function find_entries (arr, major, minor) {
 
         // Produce an entry which has the largest minor value of all entries in 'arr' with the major
         // key matching that of 'first'.
-        result.push (arr.reduce ((acc, current) => current [major] === acc[major] && current[minor] > acc[minor] ? current : acc, first));
+        result.push (arr.reduce ((acc, current) =>
+            current [major] === acc[major] && current[minor] > acc[minor] ? current : acc, first));
 
         // 'arr' becomes the collection of entries that have a major value not equal to this one.
-        arr = arr.filter(obj => obj [major] !== first [major]);
+        arr = arr.filter (obj => obj [major] !== first [major]);
     }
     return result;
 }
@@ -58,7 +73,7 @@ function validate_major (a, b, major) {
         return false;
     }
     for (let index = 0; index < a.length; ++index) {
-        if (a[index] !==  b[index]) {
+        if (a[index] !== b[index]) {
             return false;
         }
     }
@@ -72,42 +87,75 @@ function validate_major (a, b, major) {
  * @return {boolean}
  */
 function validate_minor (arr, minor) {
-    return arr.length === 0 || arr.every (el => el.hasOwnProperty (minor) && el[minor] === arr[0][minor]);
+    return arr.length === 0 ||
+        arr.every (el => el.hasOwnProperty (minor) && el[minor] === arr[0][minor]);
 }
 
-const major = 'external';
-const minor = 'linkonce';
+const argv = require ('yargs')
+    .strict ()
+    .command ('$0 [options] <csv1> <csv2>', 'Reduce inputs csv1 and csv2 to a single CSV file', (yargs) => {
+        yargs
+            .options ({
+                'major': {default: 'external', describe: 'The major key', type: 'string'},
+                'minor': {default: 'linkonce', describe: 'The minor key', type: 'string'},
+                'common': {default: 'time', describe: 'The common key', type: 'string'}
+            });
+    })
+    .help ()
+    .argv;
 
-const src_a = './results/lld.csv';
-const src_b = './results/rld.csv';
-read_two_source_files (src_a, src_b)
+/**
+ *
+ * @param arr{{}[])}
+ * @param major{string} The major property name.
+ * @param minor{string} The minor property name.
+ * @param common{string} The common property name.
+ * @result{boolean} True if all three of the major, minor, and common properties are present in all
+ * members of the 'arr' array.
+ */
+function validate_keys (arr, major, minor, common) {
+    return arr.every (el => el.hasOwnProperty (major) && el.hasOwnProperty (minor) && el.hasOwnProperty (common));
+}
+
+read_two_source_files (argv.csv1, argv.csv2)
     .then (r => {
         const [ra, rb] = r;
         if (ra.length !== rb.length) {
             throw new Error ('The number of rows in the two input files does not match');
         }
-        const rae = find_entries (csv.values_to_int (ra), major, minor);
-        const rbe = find_entries (csv.values_to_int (rb), major, minor);
+        if (!validate_keys (ra, argv.major, argv.minor, argv.common)) {
+            throw new Error (`One of the required keys was missing in a field of ${argv.csv1}`);
+        }
+        if (!validate_keys (rb, argv.major, argv.minor, argv.common)) {
+            throw new Error (`One of the required keys was missing in a field of ${argv.csv2}`);
+        }
+        const rae = find_entries (csv.values_to_int (ra), argv.major, argv.minor);
+        const rbe = find_entries (csv.values_to_int (rb), argv.major, argv.minor);
         if (rae.length !== rbe.length) {
-            throw new Error (`The arrays produced after finding the largest ${minor} entries are of different length`);
+            throw new Error (`The arrays produced after finding the largest ${argv.minor} entries are of different length`);
         }
-        if (!validate_minor (rae, minor)) {
-            throw new Error (`Input file "${src_a}" has invalid entries for the ${minor} key`);
+        if (!validate_minor (rae, argv.minor)) {
+            throw new Error (`Input file "${argv.csv1}" has invalid entries for the ${argv.minor} key`);
         }
-        if (!validate_minor (rbe, minor)) {
-            throw new Error (`Input file "${src_b}" has invalid entries for the ${minor} key`);
+        if (!validate_minor (rbe, argv.minor)) {
+            throw new Error (`Input file "${argv.csv2}" has invalid entries for the ${argv.minor} key`);
         }
-        if (!validate_major (rae, rbe, major)) {
-            throw new Error (`Input files have ${major} keys that do not match`);
+        if (!validate_major (rae, rbe, argv.major)) {
+            throw new Error (`Input files have ${argv.major} keys that do not match`);
         }
 
-        let result = [[major, path.basename (src_a, '.csv'), path.basename (src_b, '.csv')]];
+        // Column header names drawn from the major key and the two input file names.
+        let result = [[
+            argv.major,
+            path.basename (argv.csv1, '.csv'),
+            path.basename (argv.csv2, '.csv')
+        ]];
         assert.equal (rae.length, rbe.length);
         for (let index = 0; index < rae.length; ++index) {
-            assert.deepEqual(rae[index][major], rbe[index][major]);
-            result.push ([rae[index][major], rae[index].time, rbe[index].time]);
+            assert.deepEqual (rae[index][argv.major], rbe[index][argv.major]);
+            result.push ([rae[index][argv.major], rae[index].time, rbe[index].time]);
         }
 
-        console.log (csv.from_array2d(result));
+        console.log (csv.from_array2d (result));
     })
     .catch (err => console.error (err));
