@@ -120,7 +120,7 @@ function serialize_tasks (tasks) {
 
 
 function main () {
-    const argv = yargs.usage ('Usage: $0 path')
+    const argv = yargs.usage ('Usage: $0')
         .strict ()
         .default ('bin-dir', '/usr/bin')
         .describe ('bin-dir', 'The directory containing LLVM executables')
