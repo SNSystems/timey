@@ -3,5 +3,8 @@ set terminal svg
 set datafile separator ","
 if (!exists("filename")) filename='default.csv'
 
+set xlabel "Number of symbols"
+set ylabel "Time (ms)"
+
 plot filename using "symbols":"lld" title 'lld' with lines, \
      filename using "symbols":"rld" title 'rld' with lines
