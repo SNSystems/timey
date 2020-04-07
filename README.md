@@ -7,6 +7,7 @@
 
 A utility for timing linkers.
 
+
 ## Performance Profiles
 
 ### lld
@@ -16,3 +17,13 @@ A utility for timing linkers.
 ### rld
 
 ![rld performance profile](./results/rld.svg)
+
+## Comparisons (lld vs. rld)
+
+### External symbol resolution
+
+![lld vs. rld (external symbol resolution)](./results/compare_external.svg)
+
+### Linkonce symbol resolution
+
+![lld vs. rld (linkonce symbol resolution)](./results/compare_linkonce.svg)
