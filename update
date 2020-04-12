@@ -1,34 +1,34 @@
 #!/bin/bash
 BIN_DIR=$HOME/realwork/github/llvm-project-prepo/build_mac/Release/bin
 WORK_DIR=$HOME/gen/output
-LINKONCE=1000
-EXTERNAL=1000
-INCREMENT=100
-MODULES=10
+LINKONCE=20000
+EXTERNAL=20000
+INCREMENT=1000
+MODULES=100
 
 echo "Timing lld"
 ./index.js \
            --linker=lld \
            --output=./results/lld.csv \
            --force \
-           --work-dir=$WORK_DIR \
-           --bin-dir=$BIN_DIR \
-           --linkonce=$LINKONCE \
-           --external=$EXTERNAL \
-           --increment=$INCREMENT \
-           --modules=$MODULES
+           --work-dir="$WORK_DIR" \
+           --bin-dir="$BIN_DIR" \
+           --linkonce="$LINKONCE" \
+           --external="$EXTERNAL" \
+           --increment="$INCREMENT" \
+           --modules="$MODULES"
 
 echo "Timing rld"
 ./index.js \
            --linker=rld \
            --output=./results/rld.csv \
            --force \
-           --work-dir=$WORK_DIR \
-           --bin-dir=$BIN_DIR \
-           --linkonce=$LINKONCE \
-           --external=$EXTERNAL \
-           --increment=$INCREMENT \
-           --modules=$MODULES
+           --work-dir="$WORK_DIR" \
+           --bin-dir="$BIN_DIR" \
+           --linkonce="$LINKONCE" \
+           --external="$EXTERNAL" \
+           --increment="$INCREMENT" \
+           --modules="$MODULES"
 echo "Generating output"
 
 ./comparison.js --major=external --minor=linkonce ./results/lld.csv ./results/rld.csv > ./results/external.csv
@@ -39,4 +39,3 @@ gnuplot plot3d < ./results/rld.csv > ./results/rld.svg
 
 gnuplot -e "filename='./results/external.csv'" plot2d > ./results/compare_external.svg
 gnuplot -e "filename='./results/linkonce.csv'" plot2d > ./results/compare_linkonce.svg
-
