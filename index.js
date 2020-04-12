@@ -10,13 +10,12 @@ const glob = require ('glob-promise');
 const os = require ('os');
 const path = require ('path');
 const {promisify} = require ('util');
-const yargs = require ('yargs');
 
 const csv = require ('./csv');
 const run = require ('./run');
 
-const linkers = {rld:1, lld:2};
-Object.freeze(linkers);
+const linkers = {rld: 1, lld: 2};
+Object.freeze (linkers);
 
 /**
  * @param work_dir{string}  The directory used for intermediate files.
@@ -120,43 +119,74 @@ function serialize_tasks (tasks) {
 
 
 function main () {
-    const argv = yargs.usage ('Usage: $0')
+    const argv = require ('yargs')
         .strict ()
-        .default ('bin-dir', '/usr/bin')
-        .describe ('bin-dir', 'The directory containing LLVM executables')
-        .default ('work-dir', os.tmpdir ())
-        .describe ('work-dir', 'The directory to be used for intermediate (work) files')
-        .default ('repo-name', 'repository.db')
-        .describe ('repo-name', 'The program repository file name')
-        .default ('o', '-')
-        .describe ('o', 'The file to which the results will be written')
-        .alias ('o', 'output')
-        .boolean ('f')
-        .default ('f', false)
-        .describe ('f', 'Continue even if the work directory is not empty')
-        .alias ('f', 'force')
-        .boolean ('debug')
-        .default ('debug', false)
-        .hide ('debug')
-        .default ('increment', 1000)
-        .describe ('increment', 'The number by which the symbol counts are incremented on each run')
-        .default ('external', 10000)
-        .describe ('external', 'The number of external symbols defined by each module')
-        .default ('linkonce', 10000)
-        .describe ('linkonce', 'The number of linkonce symbols defined by each module')
-        .default ('modules', 100)
-        .describe ('modules', 'The number of modules to be created')
-        .boolean ('verbose')
-        .default ('verbose', false)
-        .describe ('verbose', 'Produce verbose output')
-        .string('linker')
-        .choices('linker', Object.keys (linkers))
-        .default ('linker', Object.keys (linkers)[0])
-        .describe ('linker', 'The linker to be timed')
-        .help ('h')
-        .alias ('h', 'help')
-        .argv;
+        .command ('$0 [options]', 'Generate linker timing data', (yargs) => {
+            yargs.options ({
+                'bin-dir': {
+                    default: '/usr/bin',
+                    describe: 'The directory containing LLVM executables',
+                    normalize: true
+                },
+                'work-dir': {
+                    default: os.tmpdir (),
+                    describe: 'The directory to be used for intermediate (work) files',
+                    normalize: true
+                },
+                'repo-name': {
+                    default: 'repository.db',
+                    describe: 'The program repository file name'
+                },
+                'o': {
+                    default: '-',
+                    describe: 'The file to which the results will be written',
+                    alias: 'output'
+                },
+                'f': {
+                    default: false,
+                    boolean: true,
+                    describe: 'Continue even if the work directory is not empty',
+                    alias: 'force'
+                },
+                'linker': {
+                    choices: Object.keys (linkers),
+                    default: Object.keys (linkers)[0],
+                    describe: 'The linker to be timed'
+                },
+                'debug': {
+                    default: false,
+                    boolean: true,
+                    describe: 'Produce additional debugging output',
+                    hidden: true
+                },
+                'verbose': {default: false, type: 'boolean', describe: 'Produce verbose output'},
 
+                'increment': {
+                    default: 1000,
+                    number: true,
+                    describe: 'The number by which the symbol counts are incremented on each run'
+                },
+                'external': {
+                    default: 10000,
+                    number: true,
+                    describe: 'The number of external symbols defined by each module'
+                },
+                'linkonce': {
+                    default: 10000,
+                    number: true,
+                    describe: 'The number of linkonce symbols defined by each module'
+                },
+                'modules': {
+                    default: 100,
+                    number: true,
+                    describe: 'The number of modules to be created'
+                },
+            });
+        })
+        .help ()
+        .group(['external', 'linkonce', 'increment', 'modules'], 'Control the content of the generated repository:')
+        .group(['bin-dir', 'work-dir', 'repo-name', 'output'], 'Control the location of tools and output:')
+        .argv;
 
     const lomax = argv.linkonce;
     const extmax = argv.external;
