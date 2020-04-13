@@ -11,41 +11,41 @@ A utility for timing linkers.
 
 1.  Install [Node.js](https://nodejs.org/):
 
-	-   macOS (Using [HomeBrew](https://brew.sh/))
+    -   macOS (Using [HomeBrew](https://brew.sh/))
 
-	    ~~~bash
-	    brew install node
-	    ~~~
-	-   Linux
+        ~~~bash
+	     brew install node
+	     ~~~
+    -   Linux
 
-	    ~~~bash
-	    sudo apt-get install nodejs
-	    ~~~
-1.  Install the various modules on which the tools depend:
+        ~~~bash
+	     sudo apt-get install nodejs
+        ~~~
+2.  Install the various modules on which the tools depend:
 
     ~~~bash
     npm install
     ~~~
 
-1.  Modify the `./update` script, setting the following variables:
+3.  Modify the `./update` script, setting the following variables:
 
-    - `BIN_DIR`: The locations of the executables to be timed. Normally set this inside your LLVM build directory.
-    - `WORK_DIR`: The directory to be used for the working files. This directory should exist but be empty.
-    - `EXTERNAL`: The maximum number of external symbols to be created.
-    - `LINKONCE`: The maximum number of link-once symbols to be created.
-    - `INCREMENT`: The first test generates output files with 0 external and 0 linkonce; each subsequent test increments these values by `INCREMENT` until they reach the `EXTERNAL` and `LINKONCE` setting respectively.
-    - `MODULES`: The number of modules (simulated compilations) that are created for each test.
+    -   `BIN_DIR`: The locations of the executables to be timed. Normally set this inside your LLVM build directory.
+    -   `WORK_DIR`: The directory to be used for the working files. This directory should exist but be empty.
+    -   `EXTERNAL`: The maximum number of external symbols to be created.
+    -   `LINKONCE`: The maximum number of link-once symbols to be created.
+    -   `INCREMENT`: The first test generates output files with 0 external and 0 linkonce; each subsequent test increments these values by `INCREMENT` until they reach the `EXTERNAL` and `LINKONCE` setting respectively.
+    -   `MODULES`: The number of modules (simulated compilations) that are created for each test.
 
-    The total number of symbols created for each point of the performance profile graphs is (x * MODULES) * (y * MODULES) where x is a value in the interval [0, LINKONCE] and y is a value in the interval [0, EXTERNAL]. The INCREMENT value determines the number of samples taken across each axis.
+    The total number of symbols created for each point of the performance profile graphs is (x \* MODULES) \* (y \* MODULES) where x is a value in the interval \[0, LINKONCE\] and y is a value in the interval \[0, EXTERNAL\]. The INCREMENT value determines the number of samples taken across each axis.
 
-1.  Run the update script:
+4.  Run the update script:
 
     ~~~bash
     ./update
     ~~~
 
-1.  Wait patiently. Generating and linking test data for hundreds or even thousands of binaries can take a very long time!
-1.  Results (both SVG graphs and the raw CSV data) are available in the results directory.
+5.  Wait patiently. Generating and linking test data for hundreds or even thousands of binaries can take a very long time!
+6.  Results (both SVG graphs and the raw CSV data) are available in the results directory.
 
 ## Performance Profiles
 
