@@ -16,6 +16,7 @@ A utility for timing linkers.
         ~~~bash
         brew install node
         ~~~
+
     -   Linux
 
         ~~~bash
