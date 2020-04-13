@@ -14,13 +14,14 @@ A utility for timing linkers.
     -   macOS (Using [HomeBrew](https://brew.sh/))
 
         ~~~bash
-	     brew install node
-	     ~~~
+        brew install node
+        ~~~
     -   Linux
 
         ~~~bash
-	     sudo apt-get install nodejs
+        sudo apt-get install nodejs
         ~~~
+
 2.  Install the various modules on which the tools depend:
 
     ~~~bash
@@ -45,6 +46,7 @@ A utility for timing linkers.
     ~~~
 
 5.  Wait patiently. Generating and linking test data for hundreds or even thousands of binaries can take a very long time!
+
 6.  Results (both SVG graphs and the raw CSV data) are available in the results directory.
 
 ## Performance Profiles
