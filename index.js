@@ -194,7 +194,7 @@ function main () {
     const num_tasks = Math.floor ((lomax * extmax) / (incr * incr));
 
     // start the progress bar with a total value of 200 and start value of 0
-    let bar = undefined;
+    let bar;
     if (!argv.verbose) {
         bar = new cli_progress.SingleBar ({}, cli_progress.Presets.shades_classic);
         bar.start (num_tasks);
