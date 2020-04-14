@@ -9,14 +9,14 @@ A utility for timing linkers.
 
 ## Table of Contents
 
-*   [Usage](#usage)
-*   [Timing Results](#timing-results)
-    *   [Performance Profiles](#performance-profiles)
-        *   [lld](#lld)
-        *   [rld](#rld)
-    *   [Comparisons (lld vs\. rld)](#comparisons-lld-vs-rld)
-        *   [External Symbol Resolution](#external-symbol-resolution)
-        *   [Linkonce Symbol Resolution](#linkonce-symbol-resolution)
+-   [Usage](#usage)
+-   [Timing Results](#timing-results)
+    -   [Performance Profiles](#performance-profiles)
+        -   [lld](#lld)
+        -   [rld](#rld)
+    -   [Comparisons (lld vs\. rld)](#comparisons-lld-vs-rld)
+        -   [External Symbol Resolution](#external-symbol-resolution)
+        -   [Linkonce Symbol Resolution](#linkonce-symbol-resolution)
 
 ## Usage
 
