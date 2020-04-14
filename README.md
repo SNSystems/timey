@@ -9,21 +9,21 @@ A utility for timing linkers.
 
 ## Usage
 
-1.  Install [Node.js](https://nodejs.org/):
+1.  Install [Node.js](https://nodejs.org/) and [GnuPlot](http://gnuplot.sourceforge.net):
 
     -   macOS (Using [HomeBrew](https://brew.sh/))
 
         ~~~bash
-        brew install node
+        brew install node gnuplot
         ~~~
 
     -   Linux
 
         ~~~bash
-        sudo apt-get install nodejs
+        sudo apt-get install nodejs gnuplot
         ~~~
 
-2.  Install the various modules on which the tools depend:
+2.  Install the NodeJS various modules on which the tools depend:
 
     ~~~bash
     npm install
