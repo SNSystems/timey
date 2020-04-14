@@ -2,8 +2,8 @@ set terminal svg
 
 set dgrid3d 30,30
 set hidden3d
-set xlabel "External Symbols"
-set ylabel "Linkonce Symbols"
+set xlabel "External Symbols per Module"
+set ylabel "Linkonce Symbols per Module"
 set zlabel "Time (ms)" #offset 1, 0
 set zlabel rotate parallel
 set view 120, 50
