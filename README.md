@@ -72,8 +72,12 @@ A utility for timing linkers.
 
 [Raw data](./results/compare_external.csv)
 
+This chart shows the performance of the two linkers when presented with modules containing a (fixed) large number of linkonce symbols and variable number of external symbols.
+
 ### Linkonce symbol resolution
 
 ![lld vs. rld (linkonce symbol resolution)](./results/compare_linkonce.svg)
 
 [Raw data](./results/compare_linkonce.csv)
+
+This chart shows the performance of the two linkers when presented with modules containing a (fixed) large number of external symbols and variable number of linkonce symbols.
