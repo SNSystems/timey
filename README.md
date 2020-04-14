@@ -43,13 +43,18 @@ A utility for timing linkers.
 3.  Modify the `./update` script, setting the following variables:
 
     -   `BIN_DIR`: The locations of the executables to be timed. Normally set this inside your LLVM build directory.
-    -   `WORK_DIR`: The directory to be used for the working files. This directory should exist but be empty.
+    -   `WORK_DIR`: The directory to be used for the working files. This directory should exist but be empty. **WARNING:** The contents of this directory will be overwritten by the test!
     -   `EXTERNAL`: The maximum number of external symbols to be created.
     -   `LINKONCE`: The maximum number of link-once symbols to be created.
     -   `INCREMENT`: The first test generates output files with 0 external and 0 linkonce; each subsequent test increments these values by `INCREMENT` until they reach the `EXTERNAL` and `LINKONCE` setting respectively.
     -   `MODULES`: The number of modules (simulated compilations) that are created for each test.
 
-    The total number of symbols created for each point of the performance profile graphs is (x \* MODULES) \* (y \* MODULES) where x is a value in the interval \[0, LINKONCE\] and y is a value in the interval \[0, EXTERNAL\]. The INCREMENT value determines the number of samples taken across each axis.
+    The total number of symbols created for each point of the performance profile graphs is m(x + y) where:
+
+    -   m is the number given by MODULES.
+    -   x is a value in the interval \[0, LINKONCE\].
+    -   y is a value in the interval \[0, EXTERNAL\].
+    -   The INCREMENT value determines the number of samples taken across each interval.
 
 4.  Run the update script:
 
