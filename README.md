@@ -7,6 +7,17 @@
 
 A utility for timing linkers.
 
+## Table of Contents
+
+*   [Usage](#usage)
+*   [Timing Results](#timing-results)
+    *   [Performance Profiles](#performance-profiles)
+        *   [lld](#lld)
+        *   [rld](#rld)
+    *   [Comparisons (lld vs\. rld)](#comparisons-lld-vs-rld)
+        *   [External Symbol Resolution](#external-symbol-resolution)
+        *   [Linkonce Symbol Resolution](#linkonce-symbol-resolution)
+
 ## Usage
 
 1.  Install [Node.js](https://nodejs.org/) and [GnuPlot](http://gnuplot.sourceforge.net):
@@ -50,9 +61,11 @@ A utility for timing linkers.
 
 6.  Results (both SVG graphs and the raw CSV data) are available in the results directory.
 
-## Performance Profiles
+## Timing Results
 
-### lld
+### Performance Profiles
+
+#### lld
 
 ![lld performance profile](./results/lld.svg)
 
@@ -60,7 +73,7 @@ A utility for timing linkers.
 
 This chart shows the link times for lld for different numbers of external and linkonce symbols.
 
-### rld
+#### rld
 
 ![rld performance profile](./results/rld.svg)
 
@@ -68,9 +81,9 @@ This chart shows the link times for lld for different numbers of external and li
 
 This chart shows the link times for rld for different numbers of external and linkonce symbols.
 
-## Comparisons (lld vs. rld)
+### Comparisons (lld vs. rld)
 
-### External symbol resolution
+#### External Symbol Resolution
 
 ![lld vs. rld (external symbol resolution)](./results/compare_external.svg)
 
@@ -78,7 +91,7 @@ This chart shows the link times for rld for different numbers of external and li
 
 This chart shows the performance of the two linkers when presented with modules containing a (fixed) large number of linkonce symbols and variable number of external symbols.
 
-### Linkonce symbol resolution
+#### Linkonce Symbol Resolution
 
 ![lld vs. rld (linkonce symbol resolution)](./results/compare_linkonce.svg)
 
