@@ -1,8 +1,8 @@
 #!/bin/bash
 BIN_DIR=$HOME/realwork/github/llvm-project-prepo/build_mac/Release/bin
 WORK_DIR=$HOME/gen/output
-LINKONCE=20000
-EXTERNAL=20000
+LINKONCE=50000
+EXTERNAL=50000
 INCREMENT=1000
 MODULES=100
 
