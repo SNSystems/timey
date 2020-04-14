@@ -1,4 +1,8 @@
 #!/bin/bash
+set -e # exit upon non-zero exit from a command
+set -x # print commands as they're executed
+set -u # substituting an unset variable is an error
+
 BIN_DIR=$HOME/realwork/github/llvm-project-prepo/build_mac/Release/bin
 WORK_DIR=$HOME/gen/output
 LINKONCE=50000
