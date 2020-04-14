@@ -58,11 +58,15 @@ A utility for timing linkers.
 
 [Raw data](./results/lld.csv)
 
+This chart shows the link times for lld for different numbers of external and linkonce symbols.
+
 ### rld
 
 ![rld performance profile](./results/rld.svg)
 
 [Raw data](./results/rld.csv)
+
+This chart shows the link times for rld for different numbers of external and linkonce symbols.
 
 ## Comparisons (lld vs. rld)
 
