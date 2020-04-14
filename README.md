@@ -85,16 +85,16 @@ This chart shows the link times for rld for different numbers of external and li
 
 #### External Symbol Resolution
 
-![lld vs. rld (external symbol resolution)](./results/compare_external.svg)
+![lld vs. rld (external symbol resolution)](./results/external.svg)
 
-[Raw data](./results/compare_external.csv)
+[Raw data](./results/external.csv)
 
 This chart shows the performance of the two linkers when presented with modules containing a (fixed) large number of linkonce symbols and variable number of external symbols.
 
 #### Linkonce Symbol Resolution
 
-![lld vs. rld (linkonce symbol resolution)](./results/compare_linkonce.svg)
+![lld vs. rld (linkonce symbol resolution)](./results/linkonce.svg)
 
-[Raw data](./results/compare_linkonce.csv)
+[Raw data](./results/linkonce.csv)
 
 This chart shows the performance of the two linkers when presented with modules containing a (fixed) large number of external symbols and variable number of linkonce symbols.

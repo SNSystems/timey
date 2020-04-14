@@ -41,5 +41,5 @@ echo "Generating output"
 gnuplot plot3d < ./results/lld.csv > ./results/lld.svg
 gnuplot plot3d < ./results/rld.csv > ./results/rld.svg
 
-gnuplot -e "filename='./results/external.csv'" plot2d > ./results/compare_external.svg
-gnuplot -e "filename='./results/linkonce.csv'" plot2d > ./results/compare_linkonce.svg
+gnuplot -e "filename='./results/external.csv'" plot2d > ./results/external.svg
+gnuplot -e "filename='./results/linkonce.csv'" plot2d > ./results/linkonce.svg
