@@ -107,11 +107,12 @@ function validate_keys (arr, major, minor, common) {
 const argv = require ('yargs')
     .strict ()
     .command ('$0 [options] <csv1> <csv2>', 'Reduce inputs csv1 and csv2 to a single CSV file', (yargs) => {
+        const columns = ['external', 'linkonce', 'time'];
         yargs
             .options ({
-                'major': {default: 'external', describe: 'The major key', type: 'string'},
-                'minor': {default: 'linkonce', describe: 'The minor key', type: 'string'},
-                'common': {default: 'time', describe: 'The common key', type: 'string'}
+                'major': {default: 'external', choices:columns, describe: 'The major key', type: 'string'},
+                'minor': {default: 'linkonce', choices:columns, describe: 'The minor key', type: 'string'},
+                'common': {default: 'time', choices:columns, describe: 'The common key', type: 'string'}
             });
     })
     .help ()
