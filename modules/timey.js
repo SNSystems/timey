@@ -39,7 +39,7 @@ function clean_all (work_dir, repo_name) {
 }
 
 /**
- * @param r{runner}  An instance of run.js/runner.
+ * @param r{run.runner}  An instance of run.js/runner.
  * @param linker{linkers}  The linker to be timed.
  * @param num_modules{Number}  The number of modules (ticket files) to be produced.
  * @param num_external_symbols{Number}  The number of external symbols per module.
@@ -87,13 +87,13 @@ function check_work_directory (work_dir, force) {
     return promisify (fs.stat) (work_dir)
         .then (stats => {
             if (!stats.isDirectory ()) {
-                throw new Error ('The specified work directory is not a directory');
+                return Promise.reject (new Error ('The specified work directory is not a directory'));
             }
             return promisify (fs.readdir) (work_dir);
         })
         .then (files => {
             if (files.length > 0 && !force) {
-                throw new Error ('The specified work directory was not empty (--force to continue anyway)');
+                return Promise.reject (new Error ('The specified work directory was not empty (--force to continue anyway)'));
             }
             return true;
         });
