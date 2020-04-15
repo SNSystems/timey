@@ -5,7 +5,7 @@
 const assert = require ('assert').strict;
 const path = require ('path');
 
-const csv = require ('./csv');
+const csv = require ('./modules/csv');
 
 /**
  * Reads a pair of CSV files given by path names 'a' and 'b'. Returns an array of two arrays.

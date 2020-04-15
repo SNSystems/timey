@@ -7,9 +7,8 @@ const fs = require ('fs');
 const os = require ('os');
 const {promisify} = require ('util');
 
-const csv = require ('./csv');
-const run = require ('./run');
-
+const csv = require ('./modules/csv');
+const run = require ('./modules/run');
 const timey = require ('./modules/timey.js');
 
 function main () {
