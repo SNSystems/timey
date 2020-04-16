@@ -20,7 +20,7 @@ A utility for timing linkers.
 
 ## Usage
 
-1.  Install [Node.js](https://nodejs.org/) and [GnuPlot](http://gnuplot.sourceforge.net):
+1.  Install [Node.js](https://nodejs.org/) and [GnuPlot](http://www.gnuplot.info):
 
     -   macOS (Using [HomeBrew](https://brew.sh/))
 
