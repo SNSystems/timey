@@ -10,29 +10,16 @@ EXTERNAL=50000
 INCREMENT=1000
 MODULES=100
 
-echo "Timing lld"
 ./index.js \
-           --linker=lld \
-           --output=./results/lld.csv \
+           --output=./results \
            --force \
            --work-dir="$WORK_DIR" \
            --bin-dir="$BIN_DIR" \
            --linkonce="$LINKONCE" \
            --external="$EXTERNAL" \
            --increment="$INCREMENT" \
-           --modules="$MODULES"
-
-echo "Timing rld"
-./index.js \
-           --linker=rld \
-           --output=./results/rld.csv \
-           --force \
-           --work-dir="$WORK_DIR" \
-           --bin-dir="$BIN_DIR" \
-           --linkonce="$LINKONCE" \
-           --external="$EXTERNAL" \
-           --increment="$INCREMENT" \
-           --modules="$MODULES"
+           --modules="$MODULES" \
+           rld lld
 echo "Generating output"
 
 ./comparison.js --major=external --minor=linkonce ./results/lld.csv ./results/rld.csv > ./results/external.csv

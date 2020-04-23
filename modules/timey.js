@@ -19,6 +19,11 @@ exports.linkers = linkers;
 function all_tickets_pattern (work_dir) {
     return path.join (work_dir, '*.o');
 }
+const object_file_extension = '.elf';
+
+function all_objects_pattern (work_dir) {
+    return path.join (work_dir, '*.o' + object_file_extension);
+}
 
 /**
  * Deletes the intermediate ticket, ELF, and repo database files from the working directory.
@@ -39,38 +44,80 @@ function clean_all (work_dir, repo_name) {
 }
 
 /**
- * @param r{run.runner}  An instance of run.js/runner.
  * @param linker{linkers}  The linker to be timed.
+ * @return {boolean}  True for all linkers other than rld.
+ */
+function needs_repo2obj (linker) {
+    return linker !== linkers.rld;
+}
+
+/**
+ * Accepts an array full of "tasks" (functions which take no arguments and return a promise of a
+ * result). Returns a single promise of an array of results from those tasks which are executed
+ * serially.
+ *
+ * @param tasks{Array<function>}
+ * @returns {Promise<Array<*>>}
+ */
+function serialize_tasks (tasks) {
+    return tasks.reduce ((promise_chain, item) => {
+        return promise_chain.then (chain_results => item ().then (result => [...chain_results, result]));
+    }, Promise.resolve ([]));
+}
+exports.serialize_tasks = serialize_tasks;
+
+
+/**
+ * @param r{run.runner}  An instance of run.js/runner.
+ * @param lds{linkers[]}  The linkers to be timed.
  * @param num_modules{Number}  The number of modules (ticket files) to be produced.
  * @param num_external_symbols{Number}  The number of external symbols per module.
  * @param num_linkonce_symbols{Number}  The number of linkonce symbols per module.
+ * @returns {Promise<number[]>}  The promise of an array of timings (one per linker in the order of the lds[] array).
  */
-function single_run (r, linker, num_modules, num_external_symbols, num_linkonce_symbols) {
+function single_run (r, lds, num_modules, num_external_symbols, num_linkonce_symbols) {
     const work_dir = r.get_work_dir ();
+    let repo2obj_was_run = false;
+
+    const get_linker_input_files = (linker, ticket_files) => {
+        if (!needs_repo2obj (linker)) {
+            // Just pass on the ticket files.
+            return new Promise ((resolve, _) => resolve (ticket_files));
+        }
+        if (repo2obj_was_run) {
+            // Find the object files we produced earlier.
+            return glob (all_objects_pattern (r.get_work_dir ()));
+        }
+        // Run repo2obj to convert each ticket file to an ELF object file for input to a traditional
+        // linker. Yield the list of files we created.
+        return async.mapLimit (ticket_files, os.cpus ().length, function (ticket_file, callback) {
+            repo2obj_was_run = true;
+            const object_file = ticket_file + object_file_extension;
+            return r.repo2obj (ticket_file, object_file)
+                .then (() => callback (null, object_file))
+                .catch (callback);
+        });
+    };
+
     return clean_all (work_dir, r.get_repo_name ())
         //.then (() => console.log (`external=${num_external_symbols}, linkonce=${num_linkonce_symbols}`))
         .then (() => r.rld_gen (num_modules, num_external_symbols, num_linkonce_symbols))
         .then (() => glob (all_tickets_pattern (work_dir)))
         .then (ticket_files => {
-            if (linker === linkers.rld) {
-                // Just pass on the ticket files.
-                return ticket_files;
-            }
-
-            // Run repo2obj to convert each ticket file to an ELF object file for input to a traditional linker.
-            return async.mapLimit (ticket_files, os.cpus ().length, function (ticket_file, callback) {
-                const elf_file = ticket_file + '.elf';
-                r.repo2obj (ticket_file, elf_file)
-                    .then (() => callback (null, elf_file))
-                    .catch (callback);
-            });
+            // Turn each member of the array of lds (a member the linkers 'enum') into a promise
+            // which will run that linker and return the time it took. The resulting array of
+            // promises is then resolved in series.
+            return serialize_tasks (lds.map (l => () => {
+                return get_linker_input_files (l, ticket_files)
+                    .then (ld_inputs => {
+                        const start = Date.now ();
+                        return (l === linkers.rld ? r.rld : r.lld) (ld_inputs, path.join (work_dir, 'a.out'))
+                            .then (() => Date.now () - start)
+                            .catch (err => Promise.reject (err));
+                    });
+            }));
         })
-        .then (ld_inputs => {
-            const start = Date.now ();
-            return (linker === linkers.rld ? r.rld : r.lld) (ld_inputs, path.join (work_dir, 'a.out'))
-                .then (() => Date.now () - start)
-                .catch (err => { throw err; });
-        });
+        .catch (err => Promise.reject (err));
 }
 exports.single_run = single_run;
 
@@ -100,17 +147,3 @@ function check_work_directory (work_dir, force) {
 }
 exports.check_work_directory = check_work_directory;
 
-/**
- * Accepts an array full of "tasks" (functions which take no arguments and return a promise of a
- * result). Returns a single promise of an array of results from those tasks which are executed
- * serially.
- *
- * @param tasks{Array<function>}
- * @returns {Promise<Array<results>>}
- */
-function serialize_tasks (tasks) {
-    return tasks.reduce ((promise_chain, item) => {
-        return promise_chain.then (chain_results => item ().then (result => [...chain_results, result]));
-    }, Promise.resolve ([]));
-}
-exports.serialize_tasks = serialize_tasks;

@@ -16,6 +16,7 @@
     "csv-parser": "^2.3.2",
     "glob": "^7.1.6",
     "glob-promise": "^3.4.0",
+    "moment": "^2.24.0",
     "yargs": "^15.3.1"
   }
 }
