@@ -23,12 +23,20 @@ const writeFile = promisify (fs.writeFile);
  * @param linkonce{number}
  * @param increment{number}
  * @param index{number}
- * @return {{linkonce: number, external: number}}
+ * @return{{linkonce: number, external: number}}
  */
 function index_to_coordinate (external, linkonce, increment, index) {
     const num_external = (Math.floor (index / (linkonce / increment)) + 1) * increment;
     const num_linkonce = (index % (linkonce / increment) + 1) * increment;
     return { external: num_external, linkonce: num_linkonce};
+}
+
+/**
+ * @param coord{{linkonce: number, external: number}}
+ * @return{string}
+ */
+function coordinate_to_string (coord) {
+    return "external " + coord.external + ", linkonce " + coord.linkonce;
 }
 
 function bar_formatter (options, params, payload) {
@@ -62,7 +70,7 @@ function bar_formatter (options, params, payload) {
 
 /**
  * @param r{run.runner}
- * @param params{{linkonce: number, external:number, increment:number, linkers:timey.linkers[]}}
+ * @param params{{linkonce: number, external:number, increment:number, modules:number, linkers:timey.linkers[]}}
  *     The test parameters (values including the linker to time, the max number of
  *     linkonce and external symbols, the increment, the number of modules.
  * @param output{string}
@@ -76,15 +84,21 @@ function do_timings (r, params, output, force, verbose) {
     const increment = params.increment;
     const num_tasks = Math.floor ((linkonce * external) / (increment * increment));
 
-    let bar;
+    /**
+     * @type{{mb:cli_progress.MultiBar|null,top_bar:*}}
+     */
+    let progress = {mb:null, top_bar:null};
     if (!verbose) {
-        bar = new cli_progress.SingleBar ({
-            format: bar_formatter,
-            etaBuffer: 1000,
+        const mb = new cli_progress.MultiBar ({
+            barCompleteChar: '+',
+            barIncompleteChar: '-',
             etaAsynchronousUpdate: true,
+            etaBuffer: 1000,
+            format: bar_formatter,
             fps: 2,
-        }, cli_progress.Presets.shades_classic);
-        bar.start (num_tasks);
+            noTTYOutput: true, // FIXME!
+        });
+        progress = { mb:mb, top_bar:mb.create (num_tasks, 0, {stage:''}) };
     }
 
     const lds_to_time = params.linkers; // The linkers to be timed.
@@ -95,14 +109,15 @@ function do_timings (r, params, output, force, verbose) {
                 .map ((_, index) => {
                     const coordinate = index_to_coordinate (external, linkonce, increment, index);
                     // Time a specific configuration of a particular linker.
-                    return () => timey.single_run (r,
+                    return () => timey.single_run (progress ? progress.mb : null,
+                        r,
                         lds_to_time,
                         params.modules, // the number of modules to generate
                         coordinate.external, // the number of external symbols to generate
                         coordinate.linkonce // the number of linkonce symbols to generate
                     ).then (times => {
-                        if (bar) {
-                            bar.update (index + 1);
+                        if (progress.top_bar) {
+                            progress.top_bar.update (index + 1, {stage: coordinate_to_string (coordinate)});
                         }
                         return [coordinate, times];
                     });
@@ -112,8 +127,8 @@ function do_timings (r, params, output, force, verbose) {
             // 'results' is now an array of values for each sample point. Each entry consists of an
             // object that describes its position in the grid ({external:n, linkonce:n}) and an
             // array of results, one for each of the requested linkers.
-            if (bar) {
-                bar.stop ();
+            if (progress) {
+                progress.mb.stop ();
             }
 
             // Write the results for each linker in a format that GnuPlot can understand.
@@ -125,8 +140,8 @@ function do_timings (r, params, output, force, verbose) {
             });
         })
         .catch (err => {
-            if (bar) {
-                bar.stop ();
+            if (progress) {
+                progress.mb.stop ();
             }
             return Promise.reject(err);
         });
@@ -198,7 +213,6 @@ function main () {
                 },
             });
         })
-        .help ()
         .group(['external', 'linkonce', 'increment', 'modules'], 'Control the content of the generated repository:')
         .group(['bin-dir', 'work-dir', 'repo-name', 'output'], 'Control the location of tools and output:')
         .argv;

@@ -56,7 +56,14 @@ A utility for timing linkers.
     ./update
     ~~~
 
-5.  Wait patiently. Generating and linking test data for hundreds or even thousands of binaries can take a very long time!
+5.  Wait patiently. Generating and linking test data for hundreds or even thousands of binaries can take a very long time! Whilst the tool runs, you’ll see a pair of progress bars:
+
+    ~~~
+    [+---------------------------------------] 2% | ETA: 3 hours | 51/2500 | external 2000, linkonce 1000
+    [+++++++++++++++++++++++++++-------------] 67% | ETA: a few seconds | 136/202 | repo2obj
+    ~~~
+
+    The upper bar shows the overall progress whereas the lower bar shows the stages of generating each individual result.
 
 6.  Results (both SVG graphs and the raw CSV data) are available in the results directory.
 
