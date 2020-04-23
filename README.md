@@ -11,12 +11,6 @@ A utility for timing linkers.
 
 -   [Usage](#usage)
 -   [Timing Results](#timing-results)
-    -   [Performance Profiles](#performance-profiles)
-        -   [lld](#lld)
-        -   [rld](#rld)
-    -   [Comparisons (lld vs\. rld)](#comparisons-lld-vs-rld)
-        -   [External Symbol Resolution](#external-symbol-resolution)
-        -   [Linkonce Symbol Resolution](#linkonce-symbol-resolution)
 
 ## Usage
 
@@ -68,38 +62,4 @@ A utility for timing linkers.
 
 ## Timing Results
 
-### Performance Profiles
-
-#### lld
-
-![lld performance profile](./results/lld.svg)
-
-[Raw data](./results/lld.csv)
-
-This chart shows the link times for lld for different numbers of external and linkonce symbols.
-
-#### rld
-
-![rld performance profile](./results/rld.svg)
-
-[Raw data](./results/rld.csv)
-
-This chart shows the link times for rld for different numbers of external and linkonce symbols.
-
-### Comparisons (lld vs. rld)
-
-#### External Symbol Resolution
-
-![lld vs. rld (external symbol resolution)](./results/external.svg)
-
-[Raw data](./results/external.csv)
-
-This chart shows the performance of the two linkers when presented with modules containing a (fixed) large number of linkonce symbols and variable number of external symbols.
-
-#### Linkonce Symbol Resolution
-
-![lld vs. rld (linkonce symbol resolution)](./results/linkonce.svg)
-
-[Raw data](./results/linkonce.csv)
-
-This chart shows the performance of the two linkers when presented with modules containing a (fixed) large number of external symbols and variable number of linkonce symbols.
+For timing results, please refer to [this page](./results/README.md).
