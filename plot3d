@@ -1,12 +1,13 @@
 set terminal svg
 
-set dgrid3d 30,30
+set dgrid3d 20,20
 set hidden3d
-set xlabel "External Symbols per Module"
-set ylabel "Linkonce Symbols per Module"
+set xlabel "External Symbols\nper Module"
+set ylabel "Linkonce Symbols\nper Module"
 set zlabel "Time (ms)" #offset 1, 0
 set zlabel rotate parallel
-set view 120, 50
+set view 50,30
+set key off
 
 set datafile separator ","
 splot '<cat' using "external":"linkonce":"time" with lines
