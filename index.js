@@ -39,7 +39,7 @@ function bar_formatter (options, params, payload) {
         return options.barCompleteString.substr (0, complete_size) +
             options.barGlue +
             options.barIncompleteString.substr (0, options.barsize - complete_size);
-    }
+    };
 
     const format_string = '[{bar}] {percentage}% | ETA: {eta_formatted} | {value}/{total} | {stage}';
     const elapsed_time = Math.round ((Date.now () - params.startTime) / 1000); // calculate elapsed time
