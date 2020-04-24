@@ -2,7 +2,6 @@
 'use strict';
 
 const async = require ('async');
-const cli_progress = require ('cli-progress');
 const fs = require ('fs');
 const glob = require ('glob-promise');
 const os = require ('os');
@@ -73,9 +72,9 @@ function serialize_tasks (tasks) {
 exports.serialize_tasks = serialize_tasks;
 
 /**
- * @param multi_bar{cli_progress.MultiBar}
- * @param r{run.runner}  An instance of run.js/runner.
- * @param lds{timey.linkers[]}  The linkers to be timed.
+ * @param multi_bar{MultiBar}
+ * @param r{Object}  An instance of run.js/runner.
+ * @param lds{linkers[]}  The linkers to be timed.
  * @param num_modules{Number}  The number of modules (ticket files) to be produced.
  * @param num_external_symbols{Number}  The number of external symbols per module.
  * @param num_linkonce_symbols{Number}  The number of linkonce symbols per module.
@@ -84,9 +83,7 @@ exports.serialize_tasks = serialize_tasks;
 function single_run (multi_bar, r, lds, num_modules, num_external_symbols, num_linkonce_symbols) {
     const work_dir = r.get_work_dir ();
     const r2o_count = (lds.some (needs_repo2obj) ? 1 : 0) * num_modules;
-    const count = num_modules // for rld-gen
-        + lds.length
-        + r2o_count;
+    const count = num_modules + lds.length + r2o_count; // rld-gen + repo2obj + linkers.
     const bar = multi_bar ? multi_bar.create (count, 0, {stage: ''}) : null;
 
     let repo2obj_was_run = false;
@@ -108,9 +105,7 @@ function single_run (multi_bar, r, lds, num_modules, num_external_symbols, num_l
             }
             const object_file = ticket_file + object_file_extension;
             return r.repo2obj (ticket_file, object_file)
-                .then (() => {
-                    callback (null, object_file);
-                })
+                .then (() => callback (null, object_file))
                 .catch (callback);
         });
     };

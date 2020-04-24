@@ -12,7 +12,7 @@ function spawn_process (bin_dir, executable, args, verbose, output) {
     const promise = spawn (exe_path, args);
     const log = (channel) => (data) => {
         if (verbose) {
-            process.stdout.write(`[${basename (exe_path, '.exe')}] ${channel}: ${data.toString ()}`);
+            process.stdout.write (`[${basename (exe_path, '.exe')}] ${channel}: ${data.toString ()}`);
         }
         if (output) {
             return output (data);
@@ -30,7 +30,7 @@ function spawn_process (bin_dir, executable, args, verbose, output) {
  * @param work_dir{string}  The directory into which the test data will be written.
  * @param repo_name{string}  The name of the program repository database.
  * @param verbose{boolean}  Produce verbose output?
- * @returns{Object}  An object with methods that will run rld-gen, repo2obj, rld, and lld.
+ * @returns{{}}  An object with methods that will run rld-gen, repo2obj, rld, and lld.
  */
 exports.runner = (bin_dir, work_dir, repo_name, verbose = false) => {
     return {
