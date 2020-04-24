@@ -7,7 +7,7 @@ const fs = require('fs');
 /**
  *
  * @param pathname{string}
- * @return {Promise<{()string}[])[]>}
+ * @return {Promise<{}[]>}
  */
 exports.read = (pathname) => {
     let result = [];
