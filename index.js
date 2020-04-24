@@ -36,7 +36,7 @@ function index_to_coordinate (external, linkonce, increment, index) {
  * @return{string}
  */
 function coordinate_to_string (coord) {
-    return "external " + coord.external + ", linkonce " + coord.linkonce;
+    return 'external ' + coord.external + ', linkonce ' + coord.linkonce;
 }
 
 function bar_formatter (options, params, payload) {
@@ -68,7 +68,7 @@ function bar_formatter (options, params, payload) {
 }
 
 /**
- * @param r{run.runner}
+ * @param r{Object}
  * @param params{{linkonce: number, external:number, increment:number, modules:number, linkers:timey.linkers[]}}
  *     The test parameters (values including the linker to time, the max number of
  *     linkonce and external symbols, the increment, the number of modules.
@@ -84,7 +84,7 @@ function do_timings (r, params, output, force, verbose) {
     const num_tasks = Math.floor ((linkonce * external) / (increment * increment));
 
     /**
-     * @type{{mb:cli_progress.MultiBar|null,top_bar:*}}
+     * @type{{mb:MultiBar|null,top_bar:*}}
      */
     let progress = {mb:null, top_bar:null};
     if (!verbose) {
@@ -95,7 +95,7 @@ function do_timings (r, params, output, force, verbose) {
             etaBuffer: 1000,
             format: bar_formatter,
             fps: 2,
-            noTTYOutput: true, // FIXME!
+            // noTTYOutput: true, // Enable when debugging the progress bar!
         });
         progress = { mb, top_bar:mb.create (num_tasks, 0, {stage:''}) };
     }
