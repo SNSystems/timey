@@ -111,12 +111,12 @@ function single_run (multi_bar, r, lds, num_modules, num_external_symbols, num_l
         // linker. Yield the list of files we created.
         return async.mapLimit (ticket_files, os.cpus ().length, function (ticket_file, callback) {
             repo2obj_was_run = true;
+            if (bar) {
+                bar.increment (1, {stage: 'repo2obj'});
+            }
             const object_file = ticket_file + object_file_extension;
             return r.repo2obj (ticket_file, object_file)
                 .then (() => {
-                    if (bar) {
-                        bar.increment (1, {stage: 'repo2obj'});
-                    }
                     callback (null, object_file);
                 })
                 .catch (callback);
@@ -141,15 +141,12 @@ function single_run (multi_bar, r, lds, num_modules, num_external_symbols, num_l
             return serialize_tasks (lds.map (l => () => {
                 return get_linker_input_files (l, ticket_files)
                     .then (ld_inputs => {
+                        if (bar) {
+                            bar.increment (1, {stage: get_key_by_value (linkers, l)});
+                        }
                         const start = Date.now ();
                         return (l === linkers.rld ? r.rld : r.lld) (ld_inputs, path.join (work_dir, 'a.out'))
-                            .then (() => {
-                                const time = Date.now () - start;
-                                if (bar) {
-                                    bar.increment (1, {stage: get_key_by_value (linkers, l)});
-                                }
-                                return time;
-                            })
+                            .then (() => Date.now () - start)
                             .catch (err => Promise.reject (err));
                     });
             }));
