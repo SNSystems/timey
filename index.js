@@ -67,7 +67,6 @@ function bar_formatter (options, params, payload) {
     );
 }
 
-
 /**
  * @param r{run.runner}
  * @param params{{linkonce: number, external:number, increment:number, modules:number, linkers:timey.linkers[]}}
@@ -98,7 +97,7 @@ function do_timings (r, params, output, force, verbose) {
             fps: 2,
             noTTYOutput: true, // FIXME!
         });
-        progress = { mb:mb, top_bar:mb.create (num_tasks, 0, {stage:''}) };
+        progress = { mb, top_bar:mb.create (num_tasks, 0, {stage:''}) };
     }
 
     const lds_to_time = params.linkers; // The linkers to be timed.
