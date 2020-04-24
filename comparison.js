@@ -12,10 +12,10 @@ const csv = require ('./modules/csv');
  *
  * @param a{string} Path of the first file to be read.
  * @param b{string} Path of the second file to be read.
- * @return {Promise<[({string}[])[], ({string}[])[]]>}
+ * @return {Promise<[{}[], {}[]]>}
  */
 function read_two_source_files (a, b) {
-    return csv.read (a).then (ra => csv.read (b).then (rb => [ra, rb]));
+    return Promise.all ([csv.read (a), csv.read (b)]);
 }
 
 /**
@@ -93,7 +93,7 @@ function validate_minor (arr, minor) {
 
 /**
  *
- * @param arr{{}[])}
+ * @param arr{{}[]}
  * @param major{string} The major property name.
  * @param minor{string} The minor property name.
  * @param common{string} The common property name.
