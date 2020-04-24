@@ -11,39 +11,22 @@ const fsp = require ('fs').promises;
  * @return {Promise<string | void>}  The synched revision hash.
  */
 function git_revision (repo_path) {
-    return spawn ('git', ['rev-parse', 'HEAD'], {cwd: repo_path, capture: [ 'stdout', 'stderr' ]})
-        .then(result => result.stdout.toString ().trim())
-        .catch(err => console.error ('[spawn] stderr: ', err.stderr));
+    return spawn ('git', ['rev-parse', 'HEAD'], {cwd: repo_path, capture: [ 'stdout' ]})
+        .then (result => result.stdout.toString ().trim ())
 }
 
 /**
- * Returns an object containing the git commit hashes for the llvm-project-prepo, pstore, and rld
- * repositories.
- *
- * @param llvm_root{string} The path to the llvm-project-prepo git clone.
- * @return {Promise<{llvm_project_prepo_commit: string, pstore_commit: string, rld_commit: string} | void>}
+ * Given a full git SHA hash, (crudely) returns a shortened equivalent.
+ * @param revision{string} A git commit hash.
+ * @return {string} A shortened git commit hash.
  */
-function revisions (llvm_root) {
-    const llvm = git_revision (llvm_root);
-    const pstore = git_revision (path.join (llvm_root, 'pstore'));
-    const rld = git_revision (path.join (llvm_root, 'rld'));
-    return Promise.all ([llvm, pstore, rld])
-        .then (values => {
-            return {
-                llvm_project_prepo_commit: values[0],
-                pstore_commit: values[1],
-                rld_commit: values[2]
-            };
-        }).catch (err => console.error (err));
-}
-
 function short (revision) {
     return revision.slice (0, 5);
 }
 
 require ('yargs')
     .strict ()
-    .command ('$0 [llvm-project-prepo-root]', 'Update the results README file', yargs => {
+    .command ('$0 <llvm-project-prepo-root>', 'Update the results README file', yargs => {
         yargs.positional('llvm-project-prepo-root', {
             type: 'string',
             default: '.',
