@@ -70,15 +70,7 @@ function serialize_tasks (tasks) {
         return promise_chain.then (chain_results => item ().then (result => [...chain_results, result]));
     }, Promise.resolve ([]));
 }
-
 exports.serialize_tasks = serialize_tasks;
-
-function on_rld_gen_stdout (data) {
-    const module_number = parseInt (data, 10);
-    if (lower_bar) {
-        lower_bar.update (module_number + 1, {stage: 'rld-gen'});
-    }
-}
 
 /**
  * @param multi_bar{cli_progress.MultiBar}
