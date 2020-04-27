@@ -6,7 +6,7 @@
 | --- | --- |
 | [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`{{llvm_project_prepo_short}}`](https://github.com/SNSystems/llvm-project-prepo/commit/{{llvm_project_prepo_long}}) |
 | [pstore](http://github.com/SNSystems/pstore) | commit [`{{pstore_short}}`](https://github.com/SNSystems/pstore/commit/{{pstore_long}}) |
-| [rld](http://github.com/SNSystems/rld) | commit [`{{rld_short}}`](https://github.com/SNSystems/rld/commit{{rld_long}}) |
+| [rld](http://github.com/SNSystems/rld) | commit [`{{rld_short}}`](https://github.com/SNSystems/rld/commit/{{rld_long}}) |
 
 ## Performance Profiles
 
