@@ -11,17 +11,14 @@ const fsp = require ('fs').promises;
  * @return {Promise<string | void>}  The synched revision hash.
  */
 function git_revision (repo_path) {
-    return spawn ('git', ['rev-parse', 'HEAD'], {cwd: repo_path, capture: [ 'stdout' ]})
-        .then (result => result.stdout.toString ().trim ())
-}
+    const process_stdout = out => out.stdout.toString().trim();
 
-/**
- * Given a full git SHA hash, (crudely) returns a shortened equivalent.
- * @param revision{string} A git commit hash.
- * @return {string} A shortened git commit hash.
- */
-function short (revision) {
-    return revision.slice (0, 5);
+    const long = spawn ('git', ['rev-parse', 'HEAD'], {cwd: repo_path, capture: [ 'stdout' ]});
+    const short = spawn ('git', ['rev-parse', '--short', 'HEAD'], {cwd: repo_path, capture: [ 'stdout' ]});
+    return Promise.all ([long, short])
+        .then (revisions => {
+            return {long: process_stdout (revisions[0]), short: process_stdout (revisions[1])};
+        });
 }
 
 require ('yargs')
@@ -47,12 +44,12 @@ require ('yargs')
             .then (revisions => Promise.all ([
                 fsp.readFile (argv.template, {encoding: 'utf-8'}),
                 {
-                    llvm_project_prepo_short: short (revisions[0]),
-                    llvm_project_prepo_long: revisions[0],
-                    pstore_short: short (revisions[1]),
-                    pstore_long: revisions[1],
-                    rld_short: short (revisions[2]),
-                    rld_long: revisions[2]
+                    llvm_project_prepo_short: revisions[0].short,
+                    llvm_project_prepo_long: revisions[0].long,
+                    pstore_short: revisions[1].short,
+                    pstore_long: revisions[1].long,
+                    rld_short: revisions[2].short,
+                    rld_long: revisions[2].long
                 }
             ]))
             .then (tv => {
