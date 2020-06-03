@@ -4,9 +4,9 @@
 
 | Repository | Commit |
 | --- | --- |
-| [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`8fd3f`](https://github.com/SNSystems/llvm-project-prepo/commit/8fd3f1d9f7ca74754751a343544385cfe96a7781) |
-| [pstore](http://github.com/SNSystems/pstore) | commit [`46b67`](https://github.com/SNSystems/pstore/commit/46b67c3ed01cf1ec3e5469357c638861ac428560) |
-| [rld](http://github.com/SNSystems/rld) | commit [`a645b`](https://github.com/SNSystems/rld/commita645b442dd8fb053ec91b1ed5e4a973fd39b0f28) |
+| [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`37f13`](https://github.com/SNSystems/llvm-project-prepo/commit/37f13020748441a795bf6f0a383f7e8de5447dc9) |
+| [pstore](http://github.com/SNSystems/pstore) | commit [`d72f1`](https://github.com/SNSystems/pstore/commit/d72f14689f5615f7ee5fbd369ee639ba02548a6e) |
+| [rld](http://github.com/SNSystems/rld) | commit [`56eae`](https://github.com/SNSystems/rld/commit/56eaee5c1203d62d38e12caede048fb3dfe85180) |
 
 ## Performance Profiles
 
