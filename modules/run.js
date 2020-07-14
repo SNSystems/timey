@@ -53,6 +53,7 @@ exports.runner = (bin_dir, work_dir, repo_name, verbose = false) => {
             '--output-directory', work_dir,
             '--repo', join (work_dir, repo_name),
             '--triple', 'x86_64-pc-linux-gnu-repo',
+            '--progress'
         ], verbose, output),
 
         /**
