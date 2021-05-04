@@ -3,5 +3,4 @@ set -e # exit upon non-zero exit from a command
 #set -x # print commands as they're executed
 set -u # substituting an unset variable is an error
 
-LLVM_PP_DIR=$HOME/realwork/github/llvm-project-prepo
 ./update-readme.js "$HOME/prepo" > ./results/README.md
