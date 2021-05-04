@@ -1,35 +1,7 @@
 #!/bin/bash
 set -e # exit upon non-zero exit from a command
-set -x # print commands as they're executed
+#set -x # print commands as they're executed
 set -u # substituting an unset variable is an error
 
 LLVM_PP_DIR=$HOME/realwork/github/llvm-project-prepo
-BIN_DIR=$LLVM_PP_DIR/build_mac/Release/bin
-WORK_DIR=$HOME/gen/output
-LINKONCE=50000
-EXTERNAL=50000
-INCREMENT=1000
-MODULES=100
-
-./index.js \
-           --output=./results \
-           --force \
-           --work-dir="$WORK_DIR" \
-           --bin-dir="$BIN_DIR" \
-           --linkonce="$LINKONCE" \
-           --external="$EXTERNAL" \
-           --increment="$INCREMENT" \
-           --modules="$MODULES" \
-           rld lld
-echo "Generating output"
-
-./comparison.js --major=external --minor=linkonce ./results/lld.csv ./results/rld.csv > ./results/external.csv
-./comparison.js --major=linkonce --minor=external ./results/lld.csv ./results/rld.csv > ./results/linkonce.csv
-
-gnuplot plot3d < ./results/lld.csv > ./results/lld.svg
-gnuplot plot3d < ./results/rld.csv > ./results/rld.svg
-
-gnuplot -e "filename='./results/external.csv'" plot2d > ./results/external.svg
-gnuplot -e "filename='./results/linkonce.csv'" plot2d > ./results/linkonce.svg
-
-./update-readme.js -t ./results/README.tmpl.md "$LLVM_PP_DIR" > ./results/README.md
+./update-readme.js "$HOME/prepo" > ./results/README.md
