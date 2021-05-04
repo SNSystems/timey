@@ -28,42 +28,28 @@ A utility for timing linkers.
         sudo apt-get install nodejs gnuplot
         ~~~
 
-2.  Install the NodeJS various modules on which the tools depend:
+1.  Install the various modules on which the tools depend:
 
     ~~~bash
     npm install
     ~~~
 
-3.  Modify the `./update` script, setting the following variables:
+1.  Modify the `./update` script, change the first argument passed to ./update-readme.js to match that of the clone of [llvm-project-prepo](https://github.com/SNSystems/llvm-project-prepo) used to build the test linkers.
 
-    -   `BIN_DIR`: The locations of the executables to be timed. Normally set this inside your LLVM build directory.
-    -   `WORK_DIR`: The directory to be used for the working files. This directory should exist but be empty. **WARNING:** The contents of this directory will be overwritten by the test!
-    -   `EXTERNAL`: The maximum number of external symbols to be created.
-    -   `LINKONCE`: The maximum number of link-once symbols to be created.
-    -   `INCREMENT`: The first test generates output files with 0 external and 0 linkonce; each subsequent test increments these values by `INCREMENT` until they reach the `EXTERNAL` and `LINKONCE` setting respectively.
-    -   `MODULES`: The number of modules (simulated compilations) that are created for each test.
+1.  Ensure that the linkers are on the path.
 
-    The total number of symbols created for each point of the performance profile graphs is m(x + y) where:
-
-    -   m is the number given by MODULES.
-    -   x is a value in the interval \[0, LINKONCE\].
-    -   y is a value in the interval \[0, EXTERNAL\].
-    -   The INCREMENT value determines the number of samples taken across each interval.
-
-4.  Run the update script:
+1.  Run the update script:
 
     ~~~bash
     ./update
     ~~~
 
-5.  Wait patiently. Generating and linking test data for hundreds or even thousands of binaries can take a very long time! Whilst the tool runs, you’ll see a pair of progress bars:
+1.  Wait patiently. Generating and linking test data for hundreds or even thousands of binaries can take a very long time! Whilst the tool runs, you’ll see a series of progress bars:
 
     ~~~
-    [+---------------------------------------] 2% | ETA: 3 hours | 51/2500 | external 2000, linkonce 1000
-    [+++++++++++++++++++++++++++-------------] 67% | ETA: a few seconds | 136/202 | repo2obj
+    % ./update
+    [----------------------------------------] 0% | ETA: 2 hours | 10/15300 | rld-gen
     ~~~
-
-    The upper bar shows the overall progress whereas the lower bar shows the stages of generating each individual result.
 
 6.  Results (both SVG graphs and the raw CSV data) are available in the results directory.
 
