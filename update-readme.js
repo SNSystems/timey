@@ -38,7 +38,7 @@ const resultsDir = path.join(process.cwd(), 'results')
 
 async function runTest (obj) {
   const { name, runs, params, linkers } = obj
-  const doTimey = false
+  const doTimey = true
   if (doTimey) {
     await fork('./src/timey.js',
       params.slice().concat(['--work-dir', workDir, '--prefix', name, '--runs', runs]).concat(linkers)
