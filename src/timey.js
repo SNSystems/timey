@@ -88,17 +88,17 @@ async function performTest (progress, stage, test, argv) {
   const linkers = argv._
   const t = runner(argv.workDir, argv.rlgGen, argv.repo2obj, argv.verbose)
 
-  await clean(argv.workDir, argv.repoName, argv.modules, argv.verbose)
+  await clean(argv.workDir, argv.repoName, test.modules, argv.verbose)
   await t.runRldGen(argv, test, data => {
     if (progress) {
       progress.update(stage + parseInt(data.toString(), 10) + 1, { stage: 'rld-gen' })
     }
   })
-  stage += argv.modules
+  stage += test.modules
 
   let repo2objWasRun = false
   const getLinkerInputFiles = async (linker) => {
-    const ticketFiles = Array(argv.modules).fill(null).map((_, index) => `t${index}.o`)
+    const ticketFiles = Array(test.modules).fill(null).map((_, index) => `t${index}.o`)
     if (!needsRepo2Obj(linker)) {
       // Just pass on the ticket files.
       return ticketFiles
@@ -162,11 +162,17 @@ function makeTestArray (testParam) {
   return tests
 }
 
-function stepsPerTest (argv, tests) {
+function stepsPerTest (argv, testParam) {
   const linkers = argv._
-  const rldGenCount = argv.modules
-  const r2oCount = (linkers.reduce((acc, x) => acc || needsRepo2Obj(x), false) | 0) * argv.modules
-  return linkers.length * argv.runs + rldGenCount + r2oCount
+
+  const fn = stepper.getStepper(testParam)
+  let count = 0
+  let v
+  const r2oRun = linkers.some(needsRepo2Obj)
+  while ((v = fn()) !== null) {
+    count += linkers.length * argv.runs + v.modules + (r2oRun | 0) * v.modules
+  }
+  return count
 }
 
 const yargs = require('yargs')
@@ -177,6 +183,7 @@ async function main () {
     common: 0,
     external: '0,10000,1000',
     linkonce: 0,
+    modules: 100,
     'section-size': 8
   }
   const argv = yargs(hideBin(process.argv))
@@ -191,7 +198,6 @@ async function main () {
     }, argv => {
       // console.log(argv)
     })
-    .options('modules', { default: 100 })
     .options('rld-gen', {
       normalize: true,
       default: 'rld-gen',
@@ -244,7 +250,7 @@ async function main () {
 
   const tests = makeTestArray(testParam)
 
-  const spt = stepsPerTest(argv, tests)
+  const spt = stepsPerTest(argv, testParam)
   let progress = null
   if (!argv.verbose) {
     progress = new cliProgress.SingleBar({

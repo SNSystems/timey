@@ -55,3 +55,12 @@ This chart shows the performance of the two linkers when presented with {{module
 
 Test parameters: `{{common_tp}}`<br>
 Raw data: [rld](./common.rld.csv) [ld.lld](./common.ld.lld.csv)
+
+#### Per-module Overhead
+
+![lld vs. rld (per-module overhead)](./modules.svg)
+
+This chart shows the per-module overhead for each linker. For each data point, the number of input modules is increased but those modules are all empty.
+
+Test parameters: `{{module_tp}}`<br>
+Raw data: [rld](./modules.rld.csv) [ld.lld](./modules.ld.lld.csv)

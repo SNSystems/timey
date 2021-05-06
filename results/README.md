@@ -55,3 +55,12 @@ This chart shows the performance of the two linkers when presented with 100 modu
 
 Test parameters: `--modules 100 --common 0,50000,1000 --linkonce 0 --external 0`<br>
 Raw data: [rld](./common.rld.csv) [ld.lld](./common.ld.lld.csv)
+
+#### Per-module Overhead
+
+![lld vs. rld (per-module overhead)](./modules.svg)
+
+This chart shows the per-module overhead for each linker. For each data point, the number of input modules is increased but those modules are all empty.
+
+Test parameters: `--modules 1,5000,100 --common 0 --linkonce 0 --external 0`<br>
+Raw data: [rld](./modules.rld.csv) [ld.lld](./modules.ld.lld.csv)

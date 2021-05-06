@@ -58,8 +58,8 @@ exports.runner = function (workDir, rldGen, repo2obj, verbose) {
         '--external', test.external,
         '--linkonce', test.linkonce,
         '--section-size', test['section-size'],
+        '--modules', test.modules,
 
-        '--modules', argv.modules,
         '--output-directory', '.',
         '--repo', argv.repoName,
         '--triple', 'x86_64-pc-linux-gnu-repo',

@@ -36,13 +36,16 @@ async function runGit (args, repoPath) {
 const workDir = path.join(process.cwd(), 'gen')
 const resultsDir = path.join(process.cwd(), 'results')
 
-async function runTest (obj) {
+async function runTest (obj, verbose) {
   const { name, runs, params, linkers } = obj
   const doTimey = true
   if (doTimey) {
-    await fork('./src/timey.js',
-      params.slice().concat(['--work-dir', workDir, '--prefix', name, '--runs', runs]).concat(linkers)
-    )
+    console.log(`Timing ${name}`)
+    const timeyArgs = params.slice().concat(['--work-dir', workDir, '--prefix', name, '--runs', runs])
+    if (verbose) {
+      timeyArgs.push('-v')
+    }
+    await fork('./src/timey.js', timeyArgs.concat(linkers))
   }
 
   const fileName = l => name + '.' + l + '.csv'
@@ -81,6 +84,12 @@ async function main () {
         default: './results/results.tmpl.md',
         describe: 'The path of the README template Markdown file'
       })
+      yargs.option('verbose', {
+        alias: 'v',
+        type: 'boolean',
+        default: false,
+        describe: 'Produce verbose output'
+      })
     })
     .help()
     .argv
@@ -98,7 +107,7 @@ async function main () {
     title: 'External symbol performance comparison',
     xlabel: 'External symbols per module'
   }
-  await runTest(external)
+  //await runTest(external, verbose)
   const linkonce = {
     name: 'linkonce',
     runs: RUNS,
@@ -107,7 +116,7 @@ async function main () {
     title: 'Linkonce symbol performance comparison',
     xlabel: 'Linkonce symbols per module'
   }
-  await runTest(linkonce)
+  //await runTest(linkonce, verbose)
   const common = {
     name: 'common',
     runs: RUNS,
@@ -116,7 +125,16 @@ async function main () {
     title: 'Common symbol performance comparison',
     xlabel: 'Common symbols per module'
   }
-  await runTest(common)
+  //await runTest(common, verbose)
+  const module = {
+    name: 'modules',
+    runs: RUNS,
+    params: ['--modules', '1,5000,100', '--common', 0, '--linkonce', 0, '--external', 0],
+    linkers: LINKERS,
+    title: 'Per-module overhead performance comparison',
+    xlabel: 'Modules'
+  }
+  await runTest(module, verbose)
 
   const llvmPath = argv.llvmProjectPrepoRoot
   const pstorePath = path.join(argv.llvmProjectPrepoRoot, 'pstore')
@@ -142,7 +160,8 @@ async function main () {
     modules: MODULES,
     external_tp: external.params.join(' '),
     common_tp: common.params.join(' '),
-    linkonce_tp: linkonce.params.join(' ')
+    linkonce_tp: linkonce.params.join(' '),
+    module_tp: module.params.join(' ')
   }
   process.stdout.write(mustache.render(template, view))
   return 0
