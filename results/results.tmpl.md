@@ -15,7 +15,21 @@ They are not intended in any way to mimic “real world” usage but are instead
 
 Each data point of each chart shows the result of performing {{runs}} links. The center point of the line shows the mean time for of all of the runs. The error bars show the 95% confidence interval. The “best fit” line is computed from the least squares of the mean values.
 
-### External Symbol Resolution
+### Test Parameter Notation
+
+Tests all follow the same pattern: we run rld-gen, followed by the requested linker(s). Before running a linker other than rld, we convert the rld-gen output to object files using repo2obj.
+
+The test parameters follow an expanded version of the rld-gen command-line syntax. The number of each type of objects to be generated is listed. To generate the range of inputs required for these tests one or more of these arguments can include a range of values. These are specified as min,max,step (in a similar fashion to [Fortran do loops](https://fortran-lang.org/learn/quickstart/operators_control_flow#loop-constructs-do)). 
+
+For example, consider a test parameter such as:
+
+`--modules 10 --common 0 --linkonce 0 --external 0,1000,100`
+
+This will produce 11 data points with the ‘external’ value sweeping from 0 to 1000 in steps of 100.
+
+### Results
+
+#### External Symbol Resolution
 
 ![lld vs. rld (external symbol resolution)](./external.svg)
 
@@ -24,7 +38,7 @@ This chart shows the performance of the two linkers when presented with {{module
 Test parameters: `{{external_tp}}`<br>
 Raw data: [rld](./external.rld.csv) [ld.lld](./external.ld.lld.csv)
 
-### Linkonce Symbol Resolution
+#### Linkonce Symbol Resolution
 
 ![lld vs. rld (linkonce symbol resolution)](./linkonce.svg)
 
@@ -33,7 +47,7 @@ This chart shows the performance of the two linkers when presented with {{module
 Test parameters: `{{linkonce_tp}}`<br>
 Raw data: [rld](./linkonce.rld.csv) [ld.lld](./linkonce.ld.lld.csv)
 
-### Common Symbol Resolution
+#### Common Symbol Resolution
 
 ![lld vs. rld (common symbol resolution)](./common.svg)
 
