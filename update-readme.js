@@ -38,9 +38,7 @@ const resultsDir = path.join(process.cwd(), 'results')
 
 async function runTest (obj, argv) {
   const { name, runs, params, linkers } = obj
-  const doTimey = true
   if (argv.time) {
-    console.log(`Timing ${name}`)
     const timeyArgs = params.slice().concat(['--work-dir', workDir, '--prefix', name, '--runs', runs])
     if (verbose) {
       timeyArgs.push('-v')
