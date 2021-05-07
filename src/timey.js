@@ -162,7 +162,7 @@ function makeTestArray (testParam) {
   return tests
 }
 
-function stepsPerTest (argv, testParam) {
+function getTotalSteps (argv, testParam) {
   const linkers = argv._
 
   const fn = stepper.getStepper(testParam)
@@ -250,7 +250,7 @@ async function main () {
 
   const tests = makeTestArray(testParam)
 
-  const spt = stepsPerTest(argv, testParam)
+  const totalSteps = getTotalSteps(argv, testParam)
   let progress = null
   if (!argv.verbose) {
     progress = new cliProgress.SingleBar({
@@ -262,14 +262,16 @@ async function main () {
       fps: 4
       // noTTYOutput: true, // Enable when debugging the progress bar!
     })
-    progress.start(tests.length * spt)
+    progress.start(totalSteps)
   }
 
   try {
     let step = 0
     const result = await async.mapSeries(tests, async (test) => {
+      if (progress) {
+        step = progress.value
+      }
       const r = performTest(progress, step, test, argv)
-      step += spt
       return r
     })
 
