@@ -35,7 +35,7 @@ This will produce 11 data points with the ‘external’ value sweeping from 0 t
 
 This chart shows the performance of the two linkers when presented with 100 modules containing a variable number of external symbols.
 
-Test parameters: `--modules 100 --common 0 --linkonce 0 --external 0,50000,1000`<br>
+Test parameters: `--common 0 --external 0,50000,1000 --linkonce 0 --modules 100 --section-size 16`<br>
 Raw data: [rld](./external.rld.csv) [ld.lld](./external.ld.lld.csv)
 
 #### Linkonce Symbol Resolution
@@ -44,7 +44,7 @@ Raw data: [rld](./external.rld.csv) [ld.lld](./external.ld.lld.csv)
 
 This chart shows the performance of the two linkers when presented with 100 modules containing a variable number of linkonce symbols.
 
-Test parameters: `--modules 100 --common 0 --linkonce 0,50000,1000 --external 0`<br>
+Test parameters: `--common 0 --external 0 --linkonce 0,50000,1000 --modules 100 --section-size 16`<br>
 Raw data: [rld](./linkonce.rld.csv) [ld.lld](./linkonce.ld.lld.csv)
 
 #### Common Symbol Resolution
@@ -53,7 +53,7 @@ Raw data: [rld](./linkonce.rld.csv) [ld.lld](./linkonce.ld.lld.csv)
 
 This chart shows the performance of the two linkers when presented with 100 modules containing a variable number of common symbols.
 
-Test parameters: `--modules 100 --common 0,50000,1000 --linkonce 0 --external 0`<br>
+Test parameters: `--common 0,50000,1000 --external 0 --linkonce 0 --modules 100 --section-size 16`<br>
 Raw data: [rld](./common.rld.csv) [ld.lld](./common.ld.lld.csv)
 
 #### Per-module Overhead
@@ -62,5 +62,15 @@ Raw data: [rld](./common.rld.csv) [ld.lld](./common.ld.lld.csv)
 
 This chart shows the per-module overhead for each linker. For each data point, the number of input modules is increased but those modules are all empty.
 
-Test parameters: `--modules 1,5000,100 --common 0 --linkonce 0 --external 0`<br>
+Test parameters: `--common 0 --external 0 --linkonce 0 --modules 1,5000,100 --section-size 16`<br>
 Raw data: [rld](./modules.rld.csv) [ld.lld](./modules.ld.lld.csv)
+
+#### Section size
+
+![lld vs. rld (effect of section size)](./section-size.svg)
+
+This chart shows effect of changing the amount of data carried in each section. A test of raw copying performance.
+
+Test parameters: `--common 1000 --external 1000 --linkonce 1000 --modules 10 --section-size 0,32768,4096`<br>
+Raw data: [rld](./section-size.rld.csv) [ld.lld](./section-size.ld.lld.csv)
+

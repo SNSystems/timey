@@ -36,10 +36,10 @@ async function runGit (args, repoPath) {
 const workDir = path.join(process.cwd(), 'gen')
 const resultsDir = path.join(process.cwd(), 'results')
 
-async function runTest (obj, verbose) {
+async function runTest (obj, argv) {
   const { name, runs, params, linkers } = obj
   const doTimey = true
-  if (doTimey) {
+  if (argv.time) {
     console.log(`Timing ${name}`)
     const timeyArgs = params.slice().concat(['--work-dir', workDir, '--prefix', name, '--runs', runs])
     if (verbose) {
@@ -90,6 +90,11 @@ async function main () {
         default: false,
         describe: 'Produce verbose output'
       })
+      yargs.options('time', {
+        type: 'boolean',
+        default: true,
+        describe: 'Perform timing runs (--no-time to regenerate from a previous run)'
+      })
     })
     .help()
     .argv
@@ -102,39 +107,80 @@ async function main () {
   const external = {
     name: 'external',
     runs: RUNS,
-    params: ['--modules', MODULES, '--common', 0, '--linkonce', 0, '--external', RANGE],
+    params: [
+      '--common', 0,
+      '--external', RANGE,
+      '--linkonce', 0,
+      '--modules', MODULES,
+      '--section-size', 16
+    ],
     linkers: LINKERS,
     title: 'External symbol performance comparison',
     xlabel: 'External symbols per module'
   }
-  //await runTest(external, verbose)
+  if (argv.time) {
+    await runTest(external, verbose)
+  }
   const linkonce = {
     name: 'linkonce',
     runs: RUNS,
-    params: ['--modules', MODULES, '--common', 0, '--linkonce', RANGE, '--external', 0],
+    params: [
+      '--common', 0,
+      '--external', 0,
+      '--linkonce', RANGE,
+      '--modules', MODULES,
+      '--section-size', 16
+    ],
     linkers: LINKERS,
     title: 'Linkonce symbol performance comparison',
     xlabel: 'Linkonce symbols per module'
   }
-  //await runTest(linkonce, verbose)
+  await runTest(linkonce, argv)
   const common = {
     name: 'common',
     runs: RUNS,
-    params: ['--modules', MODULES, '--common', RANGE, '--linkonce', 0, '--external', 0],
+    params: [
+      '--common', RANGE,
+      '--external', 0,
+      '--linkonce', 0,
+      '--modules', MODULES,
+      '--section-size', 16
+    ],
     linkers: LINKERS,
     title: 'Common symbol performance comparison',
     xlabel: 'Common symbols per module'
   }
-  //await runTest(common, verbose)
+  await runTest(common, argv)
   const module = {
     name: 'modules',
     runs: RUNS,
-    params: ['--modules', '1,5000,100', '--common', 0, '--linkonce', 0, '--external', 0],
+    params: [
+      '--common', 0,
+      '--external', 0,
+      '--linkonce', 0,
+      '--modules', '1,5000,100',
+      '--section-size', 16
+    ],
     linkers: LINKERS,
     title: 'Per-module overhead performance comparison',
     xlabel: 'Modules'
   }
-  await runTest(module, verbose)
+  await runTest(module, argv)
+  const sectionSize = {
+    name: 'section-size',
+    runs: RUNS,
+    params: [
+      '--common', 1000,
+      '--external', 1000,
+      '--linkonce', 1000,
+      '--modules', 10,
+      '--section-size', '0,32768,4096'
+    ],
+    linkers: LINKERS,
+    title: 'Section-size performance comparison',
+    xlabel: 'Number of Values per Section (32-bits per Value)'
+  }
+  await runTest(sectionSize, argv)
 
   const llvmPath = argv.llvmProjectPrepoRoot
   const pstorePath = path.join(argv.llvmProjectPrepoRoot, 'pstore')
@@ -161,7 +207,8 @@ async function main () {
     external_tp: external.params.join(' '),
     common_tp: common.params.join(' '),
     linkonce_tp: linkonce.params.join(' '),
-    module_tp: module.params.join(' ')
+    module_tp: module.params.join(' '),
+    section_size_tp: sectionSize.params.join(' ')
   }
   process.stdout.write(mustache.render(template, view))
   return 0

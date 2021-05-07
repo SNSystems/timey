@@ -64,3 +64,13 @@ This chart shows the per-module overhead for each linker. For each data point, t
 
 Test parameters: `{{module_tp}}`<br>
 Raw data: [rld](./modules.rld.csv) [ld.lld](./modules.ld.lld.csv)
+
+#### Section size
+
+![lld vs. rld (effect of section size)](./section-size.svg)
+
+This chart shows effect of changing the amount of data carried in each section. A test of raw copying performance.
+
+Test parameters: `{{section_size_tp}}`<br>
+Raw data: [rld](./section-size.rld.csv) [ld.lld](./section-size.ld.lld.csv)
+
