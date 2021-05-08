@@ -184,6 +184,7 @@ async function main () {
     external: '0,10000,1000',
     linkonce: 0,
     modules: 100,
+    'prefix-length': 8,
     'section-size': 8
   }
   const argv = yargs(hideBin(process.argv))
@@ -271,8 +272,7 @@ async function main () {
       if (progress) {
         step = progress.value
       }
-      const r = performTest(progress, step, test, argv)
-      return r
+      return performTest(progress, step, test, argv)
     })
 
     if (progress) {

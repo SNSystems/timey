@@ -69,8 +69,16 @@ Raw data: [rld](./modules.rld.csv) [ld.lld](./modules.ld.lld.csv)
 
 ![lld vs. rld (effect of section size)](./section-size.svg)
 
-This chart shows effect of changing the amount of data carried in each section. A test of raw copying performance.
+This chart shows the effect of changing the amount of data carried in each section. A test of raw copying performance.
 
-Test parameters: `--common 1000 --external 1000 --linkonce 1000 --modules 10 --section-size 0,32768,4096`<br>
+Test parameters: `--common 1000 --external 1000 --linkonce 1000 --modules 10 --section-size 0,32768,2048`<br>
 Raw data: [rld](./section-size.rld.csv) [ld.lld](./section-size.ld.lld.csv)
 
+#### Name Length
+
+![lld vs. rld (effect of name length)](./prefix-length.svg)
+
+This chart shows how link time is effected by the length of the strings being processed by the linker. For these runs, the contents of the input files is constant: only the length of the definition names is being changed.
+
+Test parameters: `--common 1000 --external 1000 --linkonce 1000 --modules 20 --section-size 16 --prefix-length 1,50000,1000`<br>
+Raw data: [rld](./prefix-length.rld.csv) [ld.lld](./prefix-length.ld.lld.csv)

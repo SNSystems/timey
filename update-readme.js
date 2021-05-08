@@ -40,7 +40,7 @@ async function runTest (obj, argv) {
   const { name, runs, params, linkers } = obj
   if (argv.time) {
     const timeyArgs = params.slice().concat(['--work-dir', workDir, '--prefix', name, '--runs', runs])
-    if (verbose) {
+    if (argv.verbose) {
       timeyArgs.push('-v')
     }
     await fork('./src/timey.js', timeyArgs.concat(linkers))
@@ -50,9 +50,11 @@ async function runTest (obj, argv) {
   await Promise.all(linkers.slice().map(l => copyFile(path.join(workDir, fileName(l)), path.join(resultsDir, fileName(l)))))
 
   const plotName = path.join(workDir, name + '.plot')
-  await fork('./src/chart.js',
-    ['--work-dir', workDir, '--xname', name, '--prefix', name, '--output', plotName].concat(linkers)
-  )
+  const chartArgs = ['--work-dir', workDir, '--xname', name, '--prefix', name, '--output', plotName]
+  if (argv.verbose) {
+    chartArgs.push('-v')
+  }
+  await fork('./src/chart.js', chartArgs.concat(linkers))
 
   const quote = x => '"' + x + '"'
   await run('gnuplot',
@@ -63,7 +65,7 @@ async function runTest (obj, argv) {
       plotName
     ],
     { cwd: process.cwd() },
-    verbose
+    argv.verbose
   )
 }
 
@@ -102,6 +104,25 @@ async function main () {
   const MODULES = 100
   const LINKERS = ['rld', 'ld.lld']
 
+  const names = {
+    name: 'prefix-length',
+    runs: RUNS,
+    params: [
+      '--common', 1000,
+      '--external', 1000,
+      '--linkonce', 1000,
+      '--modules', 20,
+      '--section-size', 16,
+      '--prefix-length', '1,50000,1000'
+    ],
+    linkers: LINKERS,
+    title: 'Symbol name length performance comparison',
+    xlabel: 'Name prefix length'
+  }
+  if (argv.time) {
+    await runTest(names, argv)
+  }
+
   const external = {
     name: 'external',
     runs: RUNS,
@@ -117,8 +138,9 @@ async function main () {
     xlabel: 'External symbols per module'
   }
   if (argv.time) {
-    await runTest(external, verbose)
+    await runTest(external, argv)
   }
+
   const linkonce = {
     name: 'linkonce',
     runs: RUNS,
@@ -133,7 +155,10 @@ async function main () {
     title: 'Linkonce symbol performance comparison',
     xlabel: 'Linkonce symbols per module'
   }
-  await runTest(linkonce, argv)
+  if (argv.time) {
+    await runTest(linkonce, argv)
+  }
+
   const common = {
     name: 'common',
     runs: RUNS,
@@ -148,7 +173,10 @@ async function main () {
     title: 'Common symbol performance comparison',
     xlabel: 'Common symbols per module'
   }
-  await runTest(common, argv)
+  if (argv.time) {
+    await runTest(common, argv)
+  }
+
   const module = {
     name: 'modules',
     runs: RUNS,
@@ -163,7 +191,10 @@ async function main () {
     title: 'Per-module overhead performance comparison',
     xlabel: 'Modules'
   }
-  await runTest(module, argv)
+  if (argv.time) {
+    await runTest(module, argv)
+  }
+
   const sectionSize = {
     name: 'section-size',
     runs: RUNS,
@@ -172,13 +203,15 @@ async function main () {
       '--external', 1000,
       '--linkonce', 1000,
       '--modules', 10,
-      '--section-size', '0,32768,4096'
+      '--section-size', '0,32768,2048'
     ],
     linkers: LINKERS,
     title: 'Section-size performance comparison',
     xlabel: 'Number of Values per Section (32-bits per Value)'
   }
-  await runTest(sectionSize, argv)
+  if (argv.time) {
+    await runTest(sectionSize, argv)
+  }
 
   const llvmPath = argv.llvmProjectPrepoRoot
   const pstorePath = path.join(argv.llvmProjectPrepoRoot, 'pstore')
@@ -206,7 +239,8 @@ async function main () {
     common_tp: common.params.join(' '),
     linkonce_tp: linkonce.params.join(' '),
     module_tp: module.params.join(' '),
-    section_size_tp: sectionSize.params.join(' ')
+    section_size_tp: sectionSize.params.join(' '),
+    prefix_length_tp: names.params.join(' ')
   }
   process.stdout.write(mustache.render(template, view))
   return 0
