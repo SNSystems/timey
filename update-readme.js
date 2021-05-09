@@ -4,6 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const { copyFile } = require('fs').promises
 
+const async = require('async')
 const mustache = require('mustache')
 
 const { run } = require('./src/runner')
@@ -104,114 +105,99 @@ async function main () {
   const MODULES = 100
   const LINKERS = ['rld', 'ld.lld']
 
-  const names = {
-    name: 'prefix-length',
-    runs: RUNS,
-    params: [
-      '--common', 1000,
-      '--external', 1000,
-      '--linkonce', 1000,
-      '--modules', 20,
-      '--section-size', 16,
-      '--prefix-length', '1,50000,1000'
-    ],
-    linkers: LINKERS,
-    title: 'Symbol name length performance comparison',
-    xlabel: 'Name prefix length'
+  const comparisons = {
+    'prefix-length': {
+      name: 'prefix-length',
+      runs: RUNS,
+      params: [
+        '--common', 1000,
+        '--external', 1000,
+        '--linkonce', 1000,
+        '--modules', 20,
+        '--section-size', 16,
+        '--prefix-length', '1,50000,1000'
+      ],
+      linkers: LINKERS,
+      title: 'Symbol name length performance comparison',
+      xlabel: 'Name prefix length'
+    },
+    external: {
+      name: 'external',
+      runs: RUNS,
+      params: [
+        '--common', 0,
+        '--external', RANGE,
+        '--linkonce', 0,
+        '--modules', MODULES,
+        '--section-size', 16
+      ],
+      linkers: LINKERS,
+      title: 'External symbol performance comparison',
+      xlabel: 'External symbols per module'
+    },
+    linkonce: {
+      name: 'linkonce',
+      runs: RUNS,
+      params: [
+        '--common', 0,
+        '--external', 0,
+        '--linkonce', RANGE,
+        '--modules', MODULES,
+        '--section-size', 16
+      ],
+      linkers: LINKERS,
+      title: 'Linkonce symbol performance comparison',
+      xlabel: 'Linkonce symbols per module'
+    },
+    common: {
+      name: 'common',
+      runs: RUNS,
+      params: [
+        '--common', RANGE,
+        '--external', 0,
+        '--linkonce', 0,
+        '--modules', MODULES,
+        '--section-size', 16
+      ],
+      linkers: LINKERS,
+      title: 'Common symbol performance comparison',
+      xlabel: 'Common symbols per module'
+    },
+    modules: {
+      name: 'modules',
+      runs: RUNS,
+      params: [
+        '--common', 0,
+        '--external', 0,
+        '--linkonce', 0,
+        '--modules', '1,5000,100',
+        '--section-size', 16
+      ],
+      linkers: LINKERS,
+      title: 'Per-module overhead performance comparison',
+      xlabel: 'Modules'
+    },
+    'section-size': {
+      name: 'section-size',
+      runs: RUNS,
+      params: [
+        '--common', 1000,
+        '--external', 1000,
+        '--linkonce', 1000,
+        '--modules', 10,
+        '--section-size', '0,32768,2048'
+      ],
+      linkers: LINKERS,
+      title: 'Section-size performance comparison',
+      xlabel: 'Number of Values per Section (32-bits per Value)'
+    }
   }
-  if (argv.time) {
-    await runTest(names, argv)
-  }
-
-  const external = {
-    name: 'external',
-    runs: RUNS,
-    params: [
-      '--common', 0,
-      '--external', RANGE,
-      '--linkonce', 0,
-      '--modules', MODULES,
-      '--section-size', 16
-    ],
-    linkers: LINKERS,
-    title: 'External symbol performance comparison',
-    xlabel: 'External symbols per module'
-  }
-  if (argv.time) {
-    await runTest(external, argv)
-  }
-
-  const linkonce = {
-    name: 'linkonce',
-    runs: RUNS,
-    params: [
-      '--common', 0,
-      '--external', 0,
-      '--linkonce', RANGE,
-      '--modules', MODULES,
-      '--section-size', 16
-    ],
-    linkers: LINKERS,
-    title: 'Linkonce symbol performance comparison',
-    xlabel: 'Linkonce symbols per module'
-  }
-  if (argv.time) {
-    await runTest(linkonce, argv)
-  }
-
-  const common = {
-    name: 'common',
-    runs: RUNS,
-    params: [
-      '--common', RANGE,
-      '--external', 0,
-      '--linkonce', 0,
-      '--modules', MODULES,
-      '--section-size', 16
-    ],
-    linkers: LINKERS,
-    title: 'Common symbol performance comparison',
-    xlabel: 'Common symbols per module'
-  }
-  if (argv.time) {
-    await runTest(common, argv)
-  }
-
-  const module = {
-    name: 'modules',
-    runs: RUNS,
-    params: [
-      '--common', 0,
-      '--external', 0,
-      '--linkonce', 0,
-      '--modules', '1,5000,100',
-      '--section-size', 16
-    ],
-    linkers: LINKERS,
-    title: 'Per-module overhead performance comparison',
-    xlabel: 'Modules'
-  }
-  if (argv.time) {
-    await runTest(module, argv)
-  }
-
-  const sectionSize = {
-    name: 'section-size',
-    runs: RUNS,
-    params: [
-      '--common', 1000,
-      '--external', 1000,
-      '--linkonce', 1000,
-      '--modules', 10,
-      '--section-size', '0,32768,2048'
-    ],
-    linkers: LINKERS,
-    title: 'Section-size performance comparison',
-    xlabel: 'Number of Values per Section (32-bits per Value)'
-  }
-  if (argv.time) {
-    await runTest(sectionSize, argv)
-  }
+  let count = 0
+  await async.mapSeries(Object.keys(comparisons), async (k) => {
+    ++count
+    process.stderr.write(`Stage ${count} of ${Object.keys(comparisons).length} (${k})\n`)
+    await runTest(comparisons[k], argv)
+  })
 
   const llvmPath = argv.llvmProjectPrepoRoot
   const pstorePath = path.join(argv.llvmProjectPrepoRoot, 'pstore')
@@ -235,12 +221,12 @@ async function main () {
     pstore_long: pstoreRev.long,
     runs: RUNS,
     modules: MODULES,
-    external_tp: external.params.join(' '),
-    common_tp: common.params.join(' '),
-    linkonce_tp: linkonce.params.join(' '),
-    module_tp: module.params.join(' '),
-    section_size_tp: sectionSize.params.join(' '),
-    prefix_length_tp: names.params.join(' ')
+    external_tp: comparisons.external.params.join(' '),
+    common_tp: comparisons.common.params.join(' '),
+    linkonce_tp: comparisons.linkonce.params.join(' '),
+    module_tp: comparisons.modules.params.join(' '),
+    section_size_tp: comparisons['section-size'].params.join(' '),
+    prefix_length_tp: comparisons['prefix-length'].params.join(' ')
   }
   process.stdout.write(mustache.render(template, view))
   return 0

@@ -4,7 +4,7 @@
 
 | Repository | Commit |
 | --- | --- |
-| [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`b677e9f8528a`](https://github.com/SNSystems/llvm-project-prepo/commit/b677e9f8528a6fa667632e0f5576349b1b5eb83a) |
+| [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`ca76c35ef1d0`](https://github.com/SNSystems/llvm-project-prepo/commit/ca76c35ef1d005317827efafe53e4f5297e7b666) |
 | [pstore](http://github.com/SNSystems/pstore) | commit [`16172f11`](https://github.com/SNSystems/pstore/commit/16172f11a528e446e34e7282ed5b457e7bcd48ef) |
 
 ## Comparisons (lld vs. rld)

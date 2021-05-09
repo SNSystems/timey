@@ -7,7 +7,7 @@ const path = require('path')
 const async = require('async')
 const csvParse = require('csv-parse')
 
-const plotFilePrefix = `set terminal svg
+const plotFilePrefix = `set terminal svg enhanced background rgb 'white'
 set datafile separator ","
 set ylabel "Time (ms)"
 set key top left
