@@ -7,6 +7,10 @@
 | [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`{{llvm_project_prepo_short}}`](https://github.com/SNSystems/llvm-project-prepo/commit/{{llvm_project_prepo_long}}) |
 | [pstore](http://github.com/SNSystems/pstore) | commit [`{{pstore_short}}`](https://github.com/SNSystems/pstore/commit/{{pstore_long}}) |
 
+## Host
+
+The host machine used for these timings: {{host}}
+
 ## Comparisons (lld vs. rld)
 
 The following charts show the results of running the two linker with varying, amounts of gest input. These inputs are created by the rld-gen tool (for linkers other than rld, repo2obj is then used to convert this data and produce object files for the test).

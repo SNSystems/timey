@@ -8,6 +8,7 @@ const async = require('async')
 const mustache = require('mustache')
 
 const { run } = require('./src/runner')
+const host = require('./src/host')
 
 const verbose = false
 
@@ -215,6 +216,7 @@ async function main () {
 
   const template = fs.readFileSync(argv.template, { encoding: 'utf-8' })
   const view = {
+    host: host.description(),
     llvm_project_prepo_short: llvmRev.short,
     llvm_project_prepo_long: llvmRev.long,
     pstore_short: pstoreRev.short,
