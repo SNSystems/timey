@@ -69,7 +69,7 @@ This chart shows the per-module overhead for each linker. For each data point, t
 Test parameters: `{{module_tp}}`<br>
 Raw data: [rld](./modules.rld.csv) [ld.lld](./modules.ld.lld.csv)
 
-#### Section size
+#### Section Size
 
 ![lld vs. rld (effect of section size)](./section-size.svg)
 
@@ -86,3 +86,21 @@ This chart shows how link time is effected by the length of the strings being pr
 
 Test parameters: `{{prefix_length_tp}}`<br>
 Raw data: [rld](./prefix-length.rld.csv) [ld.lld](./prefix-length.ld.lld.csv)
+
+#### External Fixups
+
+![lld vs. rld (effect of external fixups)](./external-fixups.svg)
+
+This chart shows how link time is effected by the number of external fixups are attached to a section payload. For these runs, the contents of the input files is constant: only the number of external fixups per section is being changed.
+
+Test parameters: `{{external_fixups_tp}}`<br>
+Raw data: [rld](./external-fixups.rld.csv) [ld.lld](./external-fixups.ld.lld.csv)
+
+#### Internal Fixups
+
+![lld vs. rld (effect of external fixups)](./internal-fixups.svg)
+
+This chart shows how link time is effected by the number of internal fixups are attached to a section payload. For these runs, the contents of the input files is constant: only the number of internal fixups per section is being changed.
+
+Test parameters: `{{internal_fixups_tp}}`<br>
+Raw data: [rld](./internal-fixups.rld.csv) [ld.lld](./internal-fixups.ld.lld.csv)

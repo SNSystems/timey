@@ -14,8 +14,8 @@ set key top left
 set yrange [0<*:]
 `
 
-function csvPath (argv, name) {
-  return path.join(argv.workDir, argv.prefix + '.' + name + '.csv')
+function csvPath (workDir, prefix, name) {
+  return path.join(workDir, prefix + '.' + name + '.csv')
 }
 
 async function processCsvFile (path) {
@@ -49,6 +49,58 @@ function computeBestFitLine (records, xname, yname) {
   return [m, c]
 }
 
+/**
+ * @param linkers{string[]} A list of the linkers with CSV data
+ * @param xname{string}
+ * @param output{string}  The output path name. '-' means stdout.
+ * @param workDir{string}
+ * @param prefix{string}
+ * @param verbose{boolean} Produce verbose output.
+ * @return {Promise<string | void>}  The synched revision hash.
+ */
+
+async function generatePlot (linkers, xname, output, workDir, prefix, verbose) {
+    const names = linkers.map(p => path.basename(p, '.exe'))
+    const contents = await async.map(names, async n => processCsvFile(csvPath(workDir, prefix, n))) // [ [columns, records] ]
+
+    // Define the per-linker line styles and best-fit line.
+    const plotFile = contents.slice()
+        .reduce((acc, result, index) => {
+            const [m, c] = computeBestFitLine(result[1], xname, 'mean')
+            return acc + `
+set linetype ${index * 2 + 1} pointtype 1
+set linetype ${index * 2 + 2} dashtype 2
+f${index}(x) = ${m} * x + ${c}
+`
+        }, plotFilePrefix)
+
+    if (verbose) {
+        console.log (`xname=${xname}`)
+    }
+    // Plot the lines (2 per linker)
+    const plotFile2 = contents.slice()
+        .reduce((acc, result, index) => {
+            const [columns, records] = result
+            const [m, c] = computeBestFitLine(records, xname, 'mean')
+            let r = acc
+            if (index > 0) {
+                r += ', \\\n'
+            }
+            if (!columns.hasOwnProperty(xname)) {
+                throw new Error(`Column '${xname}' was not found in the CSV file`);
+            }
+            r += `    '${csvPath(workDir, prefix, linkers[index])}' using ${columns[xname]}:${columns.mean}:${columns.confidenceInterval} with yerrorbars title '${linkers[index]}', \\\n`
+            r += `    f${index}(x) with lines title '${linkers[index]} (best fit {/:Italic y=${m.toFixed(3)}x+${c.toFixed(3)}})'`
+            return r
+        }, plotFile + '\nplot \\\n') + '\n'
+
+    if (output === '-') {
+        process.stdout.write(plotFile2)
+    } else {
+        await fs.writeFileSync(output, plotFile2)
+    }
+}
+
 async function main () {
   const argv = require('yargs')
     .strict()
@@ -76,46 +128,17 @@ async function main () {
     .help()
     .argv
 
-  const linkers = argv._
-  const names = linkers.map(p => path.basename(p, '.exe'))
-  const contents = await async.map(names, async n => processCsvFile(csvPath(argv, n))) // [ [columns, records] ]
-
-  // Define the per-linker line styles and best-fit line.
-  const plotFile = contents.slice()
-    .reduce((acc, result, index) => {
-      const [m, c] = computeBestFitLine(result[1], argv.xname, 'mean')
-      return acc + `
-set linetype ${index * 2 + 1} pointtype 1
-set linetype ${index * 2 + 2} dashtype 2
-f${index}(x) = ${m} * x + ${c}
-`
-    }, plotFilePrefix)
-
-  // Plot the lines (2 per linker)
-  const plotFile2 = contents.slice()
-    .reduce((acc, result, index) => {
-      const [columns, records] = result
-      const [m, c] = computeBestFitLine(records, argv.xname, 'mean')
-      let r = acc
-      if (index > 0) {
-        r += ', \\\n'
-      }
-      r += `    '${csvPath(argv, linkers[index])}' using ${columns[argv.xname]}:${columns.mean}:${columns.confidenceInterval} with yerrorbars title '${linkers[index]}', \\\n`
-      r += `    f${index}(x) with lines title '${linkers[index]} (best fit {/:Italic y=${m.toFixed(3)}x+${c.toFixed(3)}})'`
-      return r
-    }, plotFile + '\nplot \\\n') + '\n'
-
-  if (argv.output === '-') {
-    process.stdout.write(plotFile2)
-  } else {
-    await fs.writeFileSync(argv.output, plotFile2)
-  }
+  await generatePlot (argv._, argv.xname, argv.output, argv.workDir, argv.prefix, argv.verbose);
   return 0
 }
 
-main()
-  .then(exitCode => { process.exitCode = exitCode })
-  .catch(err => {
-    console.error(err)
-    process.exitCode = 1
-  })
+if (require.main === module) {
+    main ()
+        .then (exitCode => { process.exitCode = exitCode })
+        .catch (err => {
+            console.error (err)
+            process.exitCode = 1
+        })
+}
+
+exports.generatePlot = generatePlot

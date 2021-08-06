@@ -7,12 +7,11 @@ const { copyFile } = require('fs').promises
 const async = require('async')
 const mustache = require('mustache')
 
-const { run } = require('./src/runner')
+const chart = require('./src/chart')
 const host = require('./src/host')
+const { run } = require('./src/runner')
 
-const verbose = false
-
-async function fork (command, args) {
+async function fork (command, args, verbose) {
   return new Promise((resolve, reject) => {
     if (verbose) {
       console.log(`fork: ${command} ${args.join(' ')}`)
@@ -27,9 +26,10 @@ async function fork (command, args) {
  * Runs "git rev-parse HEAD" in the given directory to discover the synched commit.
  *
  * @param repoPath{string} The path to a git clone.
+ * @param verbose{boolean} Produce verbose output?
  * @return {Promise<string | void>}  The synched revision hash.
  */
-async function runGit (args, repoPath) {
+async function runGit (args, repoPath, verbose) {
   let output = ''
   await run('git', args, { cwd: repoPath }, verbose, data => { output += data })
   return output.toString().trim()
@@ -45,7 +45,7 @@ async function runTest (obj, argv) {
     if (argv.verbose) {
       timeyArgs.push('-v')
     }
-    await fork('./src/timey.js', timeyArgs.concat(linkers))
+    await fork('./src/timey.js', timeyArgs.concat(linkers), argv.verbose)
   }
 
   const fileName = l => name + '.' + l + '.csv'
@@ -56,7 +56,7 @@ async function runTest (obj, argv) {
   if (argv.verbose) {
     chartArgs.push('-v')
   }
-  await fork('./src/chart.js', chartArgs.concat(linkers))
+  const _ = await chart.generatePlot (linkers, name, plotName, workDir, name, argv.verbose)
 
   const quote = x => '"' + x + '"'
   await run('gnuplot',
@@ -116,7 +116,9 @@ async function main () {
         '--linkonce', 1000,
         '--modules', 20,
         '--section-size', 16,
-        '--prefix-length', '1,50000,1000'
+        '--prefix-length', '1,10000,2000',
+        '--external-fixups', 0,
+        '--internal-fixups', 0
       ],
       linkers: LINKERS,
       title: 'Symbol name length performance comparison',
@@ -130,7 +132,10 @@ async function main () {
         '--external', RANGE,
         '--linkonce', 0,
         '--modules', MODULES,
-        '--section-size', 16
+        '--section-size', 16,
+        '--prefix-length', 1,
+        '--external-fixups', 0,
+        '--internal-fixups', 0
       ],
       linkers: LINKERS,
       title: 'External symbol performance comparison',
@@ -144,7 +149,10 @@ async function main () {
         '--external', 0,
         '--linkonce', RANGE,
         '--modules', MODULES,
-        '--section-size', 16
+        '--section-size', 16,
+        '--prefix-length', 1,
+        '--external-fixups', 0,
+        '--internal-fixups', 0
       ],
       linkers: LINKERS,
       title: 'Linkonce symbol performance comparison',
@@ -158,7 +166,10 @@ async function main () {
         '--external', 0,
         '--linkonce', 0,
         '--modules', MODULES,
-        '--section-size', 16
+        '--section-size', 16,
+        '--prefix-length', 1,
+        '--external-fixups', 0,
+        '--internal-fixups', 0
       ],
       linkers: LINKERS,
       title: 'Common symbol performance comparison',
@@ -172,7 +183,10 @@ async function main () {
         '--external', 0,
         '--linkonce', 0,
         '--modules', '1,5000,100',
-        '--section-size', 16
+        '--section-size', 16,
+        '--prefix-length', 1,
+        '--external-fixups', 0,
+        '--internal-fixups', 0
       ],
       linkers: LINKERS,
       title: 'Per-module overhead performance comparison',
@@ -186,11 +200,48 @@ async function main () {
         '--external', 1000,
         '--linkonce', 1000,
         '--modules', 10,
-        '--section-size', '0,32768,2048'
+        '--section-size', '0,32768,2048',
+        '--prefix-length', 1,
+        '--external-fixups', 0,
+        '--internal-fixups', 0
       ],
       linkers: LINKERS,
       title: 'Section-size performance comparison',
       xlabel: 'Number of Values per Section (32-bits per Value)'
+    },
+    'external-fixups': {
+      name: 'external-fixups',
+      runs: RUNS,
+      params: [
+        '--common', 0,
+        '--external', 100,
+        '--linkonce', 0,
+        '--modules', MODULES,
+        '--section-size', 1000,
+        '--prefix-length', 1,
+        '--external-fixups', '0,3996,200',
+        '--internal-fixups', 0
+      ],
+      linkers: LINKERS,
+      title: 'External fixup performance comparison',
+      xlabel: 'Number of external fixups per section'
+    },
+    'internal-fixups': {
+      name: 'internal-fixups',
+      runs: RUNS,
+      params: [
+        '--common', 0,
+        '--external', 100,
+        '--linkonce', 0,
+        '--modules', MODULES,
+        '--section-size', 1000,
+        '--prefix-length', 1,
+        '--external-fixups', 0,
+        '--internal-fixups', '0,3996,200'
+      ],
+      linkers: LINKERS,
+      title: 'Internal fixup performance comparison',
+      xlabel: 'Number of internal fixups per section'
     }
   }
   let count = 0
@@ -204,10 +255,10 @@ async function main () {
   const pstorePath = path.join(argv.llvmProjectPrepoRoot, 'pstore')
 
   const revs = await Promise.all([
-    runGit(['rev-parse', 'HEAD'], llvmPath),
-    runGit(['rev-parse', '--short', 'HEAD'], llvmPath),
-    runGit(['rev-parse', 'HEAD'], pstorePath),
-    runGit(['rev-parse', '--short', 'HEAD'], pstorePath)
+    runGit(['rev-parse', 'HEAD'], llvmPath), argv.verbose,
+    runGit(['rev-parse', '--short', 'HEAD'], llvmPath, argv.verbose),
+    runGit(['rev-parse', 'HEAD'], pstorePath, argv.verbose),
+    runGit(['rev-parse', '--short', 'HEAD'], pstorePath, argv.verbose)
   ])
   const toRevObject = arr => { return { long: arr[0], short: arr[1] } }
 
@@ -223,12 +274,14 @@ async function main () {
     pstore_long: pstoreRev.long,
     runs: RUNS,
     modules: MODULES,
-    external_tp: comparisons.external.params.join(' '),
-    common_tp: comparisons.common.params.join(' '),
-    linkonce_tp: comparisons.linkonce.params.join(' '),
-    module_tp: comparisons.modules.params.join(' '),
-    section_size_tp: comparisons['section-size'].params.join(' '),
-    prefix_length_tp: comparisons['prefix-length'].params.join(' ')
+    external_tp: comparisons.external?.params.join(' '),
+    common_tp: comparisons.common?.params.join(' '),
+    linkonce_tp: comparisons.linkonce?.params.join(' '),
+    module_tp: comparisons.modules?.params.join(' '),
+    section_size_tp: comparisons['section-size']?.params.join(' '),
+    prefix_length_tp: comparisons['prefix-length']?.params.join(' '),
+    external_fixups_tp: comparisons['external-fixups']?.params.join(' '),
+    internal_fixups_tp: comparisons['internal-fixups']?.params.join(' ')
   }
   process.stdout.write(mustache.render(template, view))
   return 0

@@ -54,12 +54,15 @@ exports.runner = function (workDir, rldGen, repo2obj, verbose) {
 
     runRldGen: async function (argv, test, output /* optional callback */) {
       const exitCode = await run(rldGen, [
+        '--append', 0,
         '--common', test.common,
         '--external', test.external,
         '--linkonce', test.linkonce,
         '--modules', test.modules,
         '--prefix-length', test['prefix-length'],
         '--section-size', test['section-size'],
+        '--xfixup-size', test['external-fixups'],
+        '--ifixup-size', test['internal-fixups'],
 
         '--output-directory', '.',
         '--repo', argv.repoName,

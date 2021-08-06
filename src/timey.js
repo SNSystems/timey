@@ -185,7 +185,9 @@ async function main () {
     linkonce: 0,
     modules: 100,
     'prefix-length': 8,
-    'section-size': 8
+    'section-size': 8,
+    'external-fixups': 0,
+    'internal-fixups': 0,
   }
   const argv = yargs(hideBin(process.argv))
     .command('$0', '[linkers..]', yargs => {
@@ -293,6 +295,7 @@ async function main () {
   } finally {
     if (progress) {
       progress.stop()
+      progress = null
     }
   }
 
