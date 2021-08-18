@@ -255,7 +255,7 @@ async function main () {
   const pstorePath = path.join(argv.llvmProjectPrepoRoot, 'pstore')
 
   const revs = await Promise.all([
-    runGit(['rev-parse', 'HEAD'], llvmPath), argv.verbose,
+    runGit(['rev-parse', 'HEAD'], llvmPath, argv.verbose),
     runGit(['rev-parse', '--short', 'HEAD'], llvmPath, argv.verbose),
     runGit(['rev-parse', 'HEAD'], pstorePath, argv.verbose),
     runGit(['rev-parse', '--short', 'HEAD'], pstorePath, argv.verbose)
