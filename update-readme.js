@@ -116,7 +116,7 @@ async function main () {
         '--linkonce', 1000,
         '--modules', 20,
         '--section-size', 16,
-        '--prefix-length', '1,10000,2000',
+        '--prefix-length', '1,10000,1000',
         '--external-fixups', 0,
         '--internal-fixups', 0
       ],

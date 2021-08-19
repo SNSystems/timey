@@ -4,7 +4,7 @@
 
 | Repository | Commit |
 | --- | --- |
-| [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`ef5d70751398`](https://github.com/SNSystems/llvm-project-prepo/commit/ef5d707513989e377ae589b15599e33e4e327b5c) |
+| [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`d45e6b845f10`](https://github.com/SNSystems/llvm-project-prepo/commit/d45e6b845f101d5520caf3ca23574f03c3fe4626) |
 | [pstore](http://github.com/SNSystems/pstore) | commit [`193317a5`](https://github.com/SNSystems/pstore/commit/193317a5d0d00f56d89670692d4332a2fa819ce3) |
 
 ## Host
@@ -84,7 +84,7 @@ Raw data: [rld](./section-size.rld.csv) [ld.lld](./section-size.ld.lld.csv)
 
 This chart shows how link time is effected by the length of the strings being processed by the linker. For these runs, the contents of the input files is constant: only the length of the definition names is being changed.
 
-Test parameters: `--common 1000 --external 1000 --linkonce 1000 --modules 20 --section-size 16 --prefix-length 1,10000,2000 --external-fixups 0 --internal-fixups 0`<br>
+Test parameters: `--common 1000 --external 1000 --linkonce 1000 --modules 20 --section-size 16 --prefix-length 1,10000,1000 --external-fixups 0 --internal-fixups 0`<br>
 Raw data: [rld](./prefix-length.rld.csv) [ld.lld](./prefix-length.ld.lld.csv)
 
 #### External Fixups
