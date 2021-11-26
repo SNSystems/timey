@@ -4,12 +4,12 @@
 
 | Repository | Commit |
 | --- | --- |
-| [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`d45e6b845f10`](https://github.com/SNSystems/llvm-project-prepo/commit/d45e6b845f101d5520caf3ca23574f03c3fe4626) |
-| [pstore](http://github.com/SNSystems/pstore) | commit [`193317a5`](https://github.com/SNSystems/pstore/commit/193317a5d0d00f56d89670692d4332a2fa819ce3) |
+| [llvm-project-prepo](http://github.com/SNSystems/llvm-project-prepo) | commit [`a722d72bb878`](https://github.com/SNSystems/llvm-project-prepo/commit/a722d72bb878656407db176ff959b7c038cfb9ba) |
+| [pstore](http://github.com/SNSystems/pstore) | commit [`5bd530fd`](https://github.com/SNSystems/pstore/commit/5bd530fda105ce15dc1c3aef74a48e8e151ae381) |
 
 ## Host
 
-The host machine used for these timings: darwin, 20.5.0, x64, 16 × Intel(R) Xeon(R) W-2140B CPU @ 3.20GHz, 64 GiB RAM
+The host machine used for these timings: darwin, 21.1.0, x64, 16 × Intel(R) Xeon(R) W-2140B CPU @ 3.20GHz, 64 GiB RAM
 
 ## Comparisons (lld vs. rld)
 
