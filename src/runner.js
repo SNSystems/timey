@@ -19,6 +19,13 @@ function confidenceInterval (samples, mean) {
   return z * (standardDeviation(samples, mean) / Math.sqrt(samples.length))
 }
 
+/**
+ * Spawns a process and returns a promise.
+ * @param command  Path of the executable to be run.
+ * @param args  An array of the arguments to be passed to the command.
+ * @param options  An options Object passed directly to child_process.spawn().
+ * @param output  An optional function taking a string that the process wrote to either stdout or stderr.
+*/
 async function run (command, args, options, verbose, output /* optional callback */) {
   return new Promise((resolve, reject) => {
     if (verbose) {
@@ -33,7 +40,13 @@ async function run (command, args, options, verbose, output /* optional callback
       }
     }
     const proc = spawn(command, args, options)
-      .on('close', resolve)
+      .on('close', (code, signal) => {
+        if (code === 0) {
+          resolve(code)
+        } else {
+          reject(new Error(`process error code=${code} signal=${signal} (${command} ${args.join(' ')})`))
+        }
+      })
       .on('error', reject)
     proc.stdout.on('data', log('stdout'))
     proc.stderr.on('data', log('stderr'))
@@ -45,15 +58,16 @@ exports.runner = function (workDir, rldGen, repo2obj, verbose) {
   const options = { cwd: workDir }
   return {
     runRepo2Obj: async function (repo, ticketFile, objectFile) {
-      const exitCode = await run(repo2obj, ['--repo', repo, '-o', objectFile, ticketFile], options, verbose)
+      const args = ['--repo', repo, '-o', objectFile, ticketFile]
+      const exitCode = await run(repo2obj, args, options, verbose)
       if (exitCode !== 0) {
-        throw new Error(`repo2obj process exit code ${exitCode}`)
+        throw new Error(`repo2obj process exit code ${exitCode} (repo2obj ${args.join(' ')}`)
       }
       return objectFile
     },
 
     runRldGen: async function (argv, test, output /* optional callback */) {
-      const exitCode = await run(rldGen, [
+      await run(rldGen, [
         '--append', 0,
         '--common', test.common,
         '--external', test.external,
@@ -69,9 +83,6 @@ exports.runner = function (workDir, rldGen, repo2obj, verbose) {
         '--triple', 'x86_64-pc-linux-gnu-repo',
         '--progress'
       ], options, verbose, output)
-      if (exitCode !== 0) {
-        throw new Error(`rld-gen process exit code ${exitCode}`)
-      }
       return true
     },
 
@@ -85,11 +96,8 @@ exports.runner = function (workDir, rldGen, repo2obj, verbose) {
           output(runNumber)
         }
         const start = Date.now()
-        const exitCode = await run(command, args, options, verbose)
+        await run(command, args, options, verbose)
         const time = Date.now() - start
-        if (exitCode !== 0) {
-          throw new Error(`process exit code ${exitCode}`)
-        }
         if (c === 0) {
           return [time]
         }
