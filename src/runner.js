@@ -75,8 +75,8 @@ exports.runner = function (workDir, rldGen, repo2obj, verbose) {
         '--modules', test.modules,
         '--prefix-length', test['prefix-length'],
         '--section-size', test['section-size'],
-        '--xfixup-size', test['external-fixups'],
-        '--ifixup-size', test['internal-fixups'],
+        '--external-fixups', test['external-fixups'],
+        '--internal-fixups', test['internal-fixups'],
 
         '--output-directory', '.',
         '--repo', argv.repoName,
